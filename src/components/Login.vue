@@ -3,24 +3,59 @@
 
         <h1>LOG IN</h1>
 
-        <div class="form-group">
+        <div>
             <label for="field-charname">Character Name</label>
-            <input id="field-charname" type="charname" class="form-control" placeholder="Character Name" name="charname" value="" required="required">
+            <input id="field-charname" v-model="charname" placeholder="Character Name">
         </div>
+
 
         <div class="form-group">
             <label for="field-password">Password</label>
-            <input id="field-password" name="password" type="password" class="form-control required" placeholder="Password" required="required">
+            <input id="field-password" v-model="password" type="password" placeholder="Password">
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg">LOGIN</button>
+        <button @click="onSubmit">LOGIN</button>
 
+        <div class='my-test'>
+            a <span>blue</span> thing
+        </div>
 
     </div>
 </template>
 
 <script>
+import Config from '../config.js'
+
 export default {
-    name: 'Login'
+    name: 'Login',
+    data() {
+        return {
+            charname: '',
+            password: '',
+        }
+    },
+    methods: {
+        onSubmit() {
+            this.$emit('submit-login', this.charname, this.password);
+            return;
+
+            const ws = new WebSocket(Config.wsServer);
+            ws.onopen = (event) => {
+                ws.send(JSON.stringify({
+                    type: 'login',
+                    data: {
+                        'charname': this.charname,
+                        'password': this.password,
+                    }
+                }));
+            }
+
+        }
+    }
+
 }
 </script>
+
+<style lang="scss">
+.my-test { span { color: blue } }
+</style>
