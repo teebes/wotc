@@ -1,24 +1,20 @@
 <template>
-    <div>
+    <div class='single-form login-view'>
 
         <h1>LOG IN</h1>
 
-        <div>
-            <label for="field-charname">Character Name</label>
-            <input id="field-charname" v-model="charname" placeholder="Character Name">
+        <div class='form-group'>
+            <label for="charname">Character Name</label>
+            <input id="charname" v-model="charname" placeholder="Character Name">
         </div>
 
 
         <div class="form-group">
-            <label for="field-password">Password</label>
-            <input id="field-password" v-model="password" type="password" placeholder="Password">
+            <label for="password">Password</label>
+            <input id="password" v-model="password" type="password" placeholder="Password">
         </div>
 
-        <button @click="onSubmit">LOGIN</button>
-
-        <div class='my-test'>
-            a <span>blue</span> thing
-        </div>
+        <button class='color-primary' type='submit' @click="onSubmit">LOGIN</button>
 
     </div>
 </template>
@@ -56,6 +52,27 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.my-test { span { color: blue } }
+<style lang="scss" scoped>
+.login-view {
+    width: 200px;
+
+    margin: 0 auto;
+    align-self: center;
+
+    border: 10px solid #020202;
+    padding: 30px 40px;
+
+    h1 {
+        margin: 0 0 1.5em 0;
+        display: block;
+        width: 100%;
+        border-bottom: 1px solid;
+        padding-bottom: 10px;
+        font-size: 1.5em;
+
+    }
+
+    a:hover { text-decoration: underline; }
+
+}
 </style>
