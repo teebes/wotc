@@ -10,7 +10,7 @@
 
             <div class='world-name color-text-50'>
                 <a href='http://wotmud.org'>The Wheel of Time MUD</a>
-                <img src='../assets/help_icon_2x.png' class='help-icon'/>
+                <img @click="$emit('show-help')" src='../assets/help_icon_2x.png' class='help-icon'/>
             </div>
         </div>
 
@@ -22,7 +22,7 @@
 <script>
 
 export default {
-    name: 'Header',
+    name: 'Header'
 }
 </script>
 

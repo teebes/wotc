@@ -2,18 +2,36 @@
 
     <div id="wot-client">
 
-        <Header/>
+        <Header v-on:show-help="onShowHelp" />
 
-        <div id="notification-box"></div>
+        <div id="notification-box" v-if="notification.text">
+            <div class='ui-notification'>
+
+                <div class='notification-background'></div>
+
+                <div class='message'>{{ notification.text}}</div>
+
+                <div class="close-button" aria-label="Close">
+                    <span aria-hidden="true">&#10006;</span>
+                </div>
+            </div>
+        </div>
 
         <div id="timer-region"></div>
 
         <div class='main-view'>
             <component v-on:submit-login="onSubmitLogin"
-                   v-bind:is="currentComponent"/>
+                       v-bind:is="currentComponent"/>
         </div>
 
-        <div id="wot-modal"></div>
+        <div id="wot-modal">
+            <div class='advent-modal-wrapper' v-if="showHelp">
+                <div class='modal-overlay'></div>
+                <div class='modal-contents-region'>
+                    <Help v-on:close-help="onCloseHelp"/>
+                </div>
+            </div>
+        </div>
 
 </div>
 </template>
@@ -22,6 +40,7 @@
 import Login from './Login.vue'
 import Game from './Game.vue'
 import Header from './Header.vue'
+import Help from './Help.vue'
 
 export default {
     name: 'Client',
@@ -29,18 +48,33 @@ export default {
         Login,
         Game,
         Header,
+        Help,
     },
     data() {
         return {
-            isLoggedIn: false
+            isLoggedIn: false,
+            showHelp: false,
+            notification: {
+                text: '',
+                isError: false,
+            }
         }
     },
     methods: {
         onSubmitLogin (charname, password) {
+            this.notification.text = 'Trying to log in';
+            return;
+
             console.log(this.ws);
 
             console.log('Would like to submit with ' + charname + ' and ' + password);
             this.isLoggedIn = true;
+        },
+        onShowHelp () {
+            this.showHelp = true;
+        },
+        onCloseHelp() {
+            this.showHelp = false;
         }
     },
     computed: {
@@ -58,11 +92,19 @@ export default {
 $color-background: #191A1C;
 $color-text: #EBEBEB;
 $color-text-hex-50: #808080;
+$color-text-hex-70: #b3b3b3;
 $color-primary: #D77617;
 $color-primary-rgba: rgba(215, 118, 23, 1.0);
 $color-secondary: #f5c983;
-$color-red: #C13434;
 
+$color-text-dark: #161616; // meant to look good against color-text background
+
+$color-green: #279084;
+$color-green-70: #266962;
+$color-red: #C13434;
+$color-red-70: #8b2b2e;
+
+.color-primary { color: $color-primary }
 
 html, body {
     width: 100%;
@@ -159,8 +201,61 @@ button[type=submit] {
     min-height: 0;
     min-width: 0;
 
-    #notification-box > .ui-notification {
-        top: 20px;
+    #notification-box {
+        position: relative;
+
+        .ui-notification {
+
+            border: 3px solid $color-green;
+            position: absolute;
+            max-width: 300px;
+            left: 0;
+            right: 0;
+            top: 20px;
+            margin-right: auto;
+            margin-left: auto;
+            z-index: 10000;
+
+            div.notification-background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
+                background-color: $color-green-70;
+                z-index: 100;
+            }
+
+            &.error {
+                border-color: $color-red;
+                .notification-background {
+                    background-color: $color-red-70;
+                }
+            }
+
+            div.message {
+                position: relative;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                z-index: 110;
+            }
+
+            div.close-button {
+                &:hover { cursor: pointer }
+                position: absolute;
+                right: 6px;
+                top: 0;
+                z-index: 120;
+
+                span {
+                    color: $color-text-dark;
+                    font-size: 15px;
+                }
+            }
+        }
     }
 
     #timer-region {
@@ -329,8 +424,43 @@ button[type=submit] {
     }
 
     #wot-modal {
+        top: 0;
+        position: fixed;
         z-index: 1000;
+
+        .modal-overlay {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: fixed;
+            background: rgba(0, 0, 0, 0.6);
+
+            &.opaque { // meant to completely obscure what's behind
+                background: rgba(0, 0, 0, 1);
+            }
+        }
+
+        .modal-contents-region {
+            position: fixed;
+            top: 0;
+            overflow-y: scroll;
+            height: 100%;
+            width: 100%;
+        }
+
         .wot-help {
+
+            background: $color-background;
+            color: $color-text;
+            font-size: 13px;
+            border: 10px solid #020202;
+            padding: 0;
+            max-width: 760px;
+            margin: 0 auto;
+            vertical-align: middle;
+
+
             .cmd {
                 color: $color-secondary;
             }
@@ -344,6 +474,8 @@ button[type=submit] {
                 .close-icon {
                     color: $color-red;
                     padding: 5px;
+
+                    &:hover { cursor: pointer; }
                 }
             }
         }
@@ -351,13 +483,4 @@ button[type=submit] {
 
 }
 
-
-
 </style>
-
-$color-background;
-$color-text;
-$color-primary;
-$color-secondary;
-$color-text-hex-50;
-$color-red;
