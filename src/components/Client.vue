@@ -28,8 +28,8 @@
         <div id="wot-modal">
             <div class='advent-modal-wrapper' v-if="showHelp">
                 <div class='modal-overlay'></div>
-                <div class='modal-contents-region'>
-                    <Help v-on:close-help="onCloseHelp"/>
+                <div class='modal-contents-region' @click="onCloseHelp">
+                    <Help v-on:click-close-button="onCloseHelp"/>
                 </div>
             </div>
         </div>
@@ -108,7 +108,7 @@ export default {
         onShowHelp () {
             this.showHelp = true;
         },
-        onCloseHelp() {
+        onCloseHelp(event) {
             this.showHelp = false;
         },
 
@@ -486,9 +486,12 @@ button[type=submit] {
             &.opaque { // meant to completely obscure what's behind
                 background: rgba(0, 0, 0, 1);
             }
+
+            transition: opacity .3s ease;
         }
 
         .modal-contents-region {
+            transition: all .3s ease;
             position: fixed;
             top: 0;
             overflow-y: scroll;
