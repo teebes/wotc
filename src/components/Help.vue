@@ -1,12 +1,12 @@
 <template>
-<div class='single-page wot-help'>
+<div class='single-page wot-help' @click.stop>
 
     <div class='title-banner'>
         <div class='page-title'>
             <h1>The Wheel of Time MUD Web Client</h1>
         </div>
 
-        <div class='close-icon'><span @click="$emit('close-help')" class='close-icon'>&#10006;</span></div>
+        <div class='close-icon'><span @click="$emit('click-close-button')" class='close-icon'>&#10006;</span></div>
 
     </div>
 
