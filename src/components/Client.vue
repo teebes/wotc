@@ -20,8 +20,9 @@
         <div id="timer-region"></div>
 
         <div class='main-view'>
-            <component v-on:submit-login="onSubmitLogin"
-                       v-bind:is="currentComponent"/>
+            <Game v-if="isLoggedIn"
+                  v-bind:messages="messages"/>
+            <Login v-else v-on:submit-login="onSubmitLogin"/>
         </div>
 
         <div id="wot-modal">
@@ -41,6 +42,7 @@ import Login from './Login.vue'
 import Game from './Game.vue'
 import Header from './Header.vue'
 import Help from './Help.vue'
+import Config from '../config.js'
 
 export default {
     name: 'Client',
@@ -54,15 +56,48 @@ export default {
         return {
             isLoggedIn: false,
             showHelp: false,
+
+            // A message is composed of chunks, so that we can support
+            // things like differently colored blocks of text.
+            messages: [],
+
             notification: {
                 text: '',
                 isError: false,
             }
         }
     },
+    mounted() {
+        if (Config.emulate) {
+            this.onSubmitLogin(Config.emulate.charname,
+                               Config.emulate.password);
+        }
+
+    },
+    myTest() {
+        console.log('works!')
+    },
     methods: {
         onSubmitLogin (charname, password) {
-            this.notification.text = 'Trying to log in';
+            this.notification.text = 'Logging in...';
+
+            const ws = new WebSocket(Config.wsServer);
+
+            ws.onopen = (event) => {
+                ws.send(JSON.stringify({
+                    type: 'login',
+                    data: {
+                        'charname': charname,
+                        'password': password,
+                    }
+                }));
+            }
+
+            ws.onmessage = (event) => {
+                var data = JSON.parse(event.data);
+                this.onReceiveMessage(data);
+            }
+
             return;
 
             console.log(this.ws);
@@ -75,13 +110,25 @@ export default {
         },
         onCloseHelp() {
             this.showHelp = false;
+        },
+
+        connect() {
+            this.notification.text = 'Connected'
+            this.isLoggedIn = true;
+            this.messages.push()
+        },
+
+        onReceiveMessage(data) {
+            console.log("Message received:")
+            console.log(data)
+            if (data.type === 'connected') {
+                this.connect(data);
+            }
+
         }
+
+
     },
-    computed: {
-        currentComponent: function() {
-            return this.isLoggedIn ? 'Game' : 'Login'
-        }
-    }
 }
 </script>
 
