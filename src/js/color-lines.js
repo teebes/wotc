@@ -1,5 +1,32 @@
 import Config from '../config.js'
 
+
+class Rectangle {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+}
+
+var find_color = function(text) {
+
+    var matched_color = null,
+        shortest_length = 1000;
+
+    for (const color of Config.COLOR_LIST) {
+        if (text.includes(color)) {
+            // Find the length of the chunk of text preceding the color
+            var pre_length = text.split(color)[0].length;
+            if (pre_length < shortest_length) {
+                shortest_length = pre_length;
+                matched_color = color;
+            }
+        }
+    }
+
+    return matched_color;
+}
+
 export default function(orig_lines) {
     /*
         For each line, we have to determine whether it is a single
@@ -33,7 +60,7 @@ export default function(orig_lines) {
     */
     var lines = [];
 
-     _.each(orig_lines, function(line) {
+     for (let line of orig_lines) {
 
         // Blocks is what the line gets broken up into
         var blocks = [],
@@ -91,7 +118,7 @@ export default function(orig_lines) {
 
         lines.push(blocks);
 
-    });
+    }
 
     return lines;
 }

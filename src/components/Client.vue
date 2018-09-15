@@ -1,40 +1,34 @@
 <template>
 
-    <div id="wot-client">
+<div id="wot-client">
 
-        <Header v-on:show-help="onShowHelp" />
+    <Header v-on:show-help="onShowHelp" />
 
-        <div id="notification-box" v-if="notification.text">
-            <div class='ui-notification'>
+    <div id="notification-box" >
+        <Notification v-if="notification.text"
+                      :notification="notification"
+                      v-on:close-notification="notification.text = ''"/>
+    </div>
 
-                <div class='notification-background'></div>
+    <div id="timer-region"></div>
 
-                <div class='message'>{{ notification.text}}</div>
+    <div class='main-view'>
+        <Game v-if="isLoggedIn"
+              v-bind:messages="messages"/>
+        <Login v-else v-on:submit-login="onSubmitLogin"/>
+    </div>
 
-                <div class="close-button" aria-label="Close">
-                    <span aria-hidden="true">&#10006;</span>
-                </div>
+    <div id="wot-modal">
+        <div class='advent-modal-wrapper' v-if="showHelp">
+            <div class='modal-overlay'></div>
+            <div class='modal-contents-region' @click="onCloseHelp">
+                <Help v-on:click-close-button="onCloseHelp"/>
             </div>
         </div>
-
-        <div id="timer-region"></div>
-
-        <div class='main-view'>
-            <Game v-if="isLoggedIn"
-                  v-bind:messages="messages"/>
-            <Login v-else v-on:submit-login="onSubmitLogin"/>
-        </div>
-
-        <div id="wot-modal">
-            <div class='advent-modal-wrapper' v-if="showHelp">
-                <div class='modal-overlay'></div>
-                <div class='modal-contents-region' @click="onCloseHelp">
-                    <Help v-on:click-close-button="onCloseHelp"/>
-                </div>
-            </div>
-        </div>
+    </div>
 
 </div>
+
 </template>
 
 <script>
@@ -43,6 +37,7 @@ import Game from './Game.vue'
 import Header from './Header.vue'
 import Help from './Help.vue'
 import Config from '../config.js'
+import Notification from './Notification.vue'
 
 export default {
     name: 'Client',
@@ -51,6 +46,7 @@ export default {
         Game,
         Header,
         Help,
+        Notification
     },
     data() {
         return {
@@ -73,9 +69,6 @@ export default {
                                Config.emulate.password);
         }
 
-    },
-    myTest() {
-        console.log('works!')
     },
     methods: {
         onSubmitLogin (charname, password) {
@@ -125,10 +118,13 @@ export default {
                 this.connect(data);
             }
 
+            if (['incoming', 'room'].includes(data.type)) {
+                this.messages.push(data);
+            }
+
         }
-
-
     },
+
 }
 </script>
 
