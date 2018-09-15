@@ -16,6 +16,7 @@
 
         <Game v-if="isLoggedIn"
               v-bind:messages="messages"
+              v-bind:map="map"
               v-on:send-cmd="sendCmd"/>
 
         <Login v-else v-on:submit-login="onSubmitLogin"/>
@@ -67,7 +68,9 @@ export default {
             notification: {
                 text: '',
                 isError: false,
-            }
+            },
+
+            map: [],
         }
     },
     mounted() {
@@ -84,13 +87,15 @@ export default {
             const ws = new WebSocket(Config.wsServer);
 
             ws.onopen = (event) => {
-                ws.send(JSON.stringify({
+                const data = {
                     type: 'login',
                     data: {
                         'charname': charname,
                         'password': password,
                     }
-                }));
+                }
+                console.log(data);
+                ws.send(JSON.stringify(data));
             }
 
             ws.onmessage = (event) => {
@@ -101,10 +106,12 @@ export default {
             this.ws = ws;
         },
 
-        connect() {
+        connect(data) {
             this.notification.text = 'Connected'
             this.isLoggedIn = true;
-            this.messages.push()
+            //this.messages.push()
+
+            this.map = data.map
         },
 
         onReceiveMessage(data) {
@@ -112,9 +119,7 @@ export default {
             console.log(data)
             if (data.type === 'connected') {
                 this.connect(data);
-            }
-
-            if (['incoming', 'room'].includes(data.type)) {
+            } else if (['incoming', 'room'].includes(data.type)) {
                 this.messages.push(data);
             }
 
@@ -122,7 +127,6 @@ export default {
 
         sendCmd(data) {
             this.messages.push(data)
-            console.log()
             this.ws.send(JSON.stringify(data))
         }
     },

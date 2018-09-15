@@ -4,6 +4,7 @@ export default {
         charname: 'a',
         password: 'b',
     },
+    //emulate: false,
     COLORS: {
         '\x1b[31m': 'red',
         '\x1b[36m': 'blue',

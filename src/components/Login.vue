@@ -5,16 +5,16 @@
 
         <div class='form-group'>
             <label for="charname">Character Name</label>
-            <input id="charname" v-model="charname" placeholder="Character Name">
+            <input id="charname" v-model="charname" placeholder="Character Name" @keyup.enter='submit'>
         </div>
 
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input id="password" v-model="password" type="password" placeholder="Password">
+            <input id="password" v-model="password" type="password" placeholder="Password" @keyup.enter='submit'>
         </div>
 
-        <button class='color-primary' type='submit' @click="$emit('submit-login')">LOGIN</button>
+        <button class='color-primary' type='submit' @click="submit">LOGIN</button>
 
     </div>
 </template>
@@ -31,7 +31,10 @@ export default {
         }
     },
     methods: {
-        onSubmit() {
+        submit() {
+            this.$emit('submit-login', this.charname, this.password)
+            return
+            console.log('submitting this.charname as ' + this.charname);
             this.$emit('submit-login', this.charname, this.password);
             return;
         }

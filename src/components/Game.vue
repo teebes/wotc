@@ -1,6 +1,8 @@
 <template>
     <div class='game-view'>
-        <div class='corner-map-region'></div>
+        <div class='corner-map-region'>
+            <canvas id="map" width="270" height="270"/>
+        </div>
 
         <Console :messages="messages" />
 
@@ -35,16 +37,10 @@ export default {
             'input': '',
         }
     },
-    watch: {
-        input: function(oldInput, newInput) {
-            //console.log('watch event');
-        }
-    },
     methods: {
         submit() {
             const input = this.input;
             this.input = '';
-            console.log('cmd: ' + this.input);
 
             const cmd = {
                 type: 'cmd',

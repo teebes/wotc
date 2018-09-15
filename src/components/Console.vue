@@ -28,8 +28,6 @@ export default {
         Message
     },
     beforeUpdate() {
-        console.log('before change');
-        console.log(this.$refs.console);
         this.wasScrolledDown = isScrolledDown(this.$refs.console);
 
     },

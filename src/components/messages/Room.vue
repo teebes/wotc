@@ -22,7 +22,7 @@
     </div>
 
     <div class='room-items'>
-        <div v-for="item in room.room_items">{{ item }}</div>
+        <div v-for="item in room.items">{{ item }}</div>
     </div>
 
     <div class='room-mobs'>
@@ -49,6 +49,8 @@ export default {
             return ''
         },
         mob_lines() {
+            console.log('===== MOBS =====')
+            console.log(this.room.mobs)
             return color_lines(this.room.mobs)
         }
     }

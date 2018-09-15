@@ -14,22 +14,8 @@
 <script>
 import color_lines from '../../js/color-lines.js'
 
-function replace_leading_spaces(original_string) {
-
+function replace_spaces(original_string) {
     return original_string.replace(/\s/g, '&nbsp;')
-
-    // For each line, replace leading spaces with &nbsp;
-    function foo() {
-      var leadingSpaces = arguments[0].length;
-      var str = '';
-      while(leadingSpaces > 0) {
-        str += '&nbsp;';
-        leadingSpaces--;
-      }
-      return str;
-    }
-
-    return original_string.replace(/^[ \t]+/mg, foo);
 }
 
 export default {
@@ -37,11 +23,18 @@ export default {
     props: ['lines'],
     computed: {
         new_lines: function() {
-            let lines = [];
-            for (let l of this.lines) {
-                lines.push(replace_leading_spaces(l));
+            let lines = this.lines
+
+            // Make sure lines is always iterable
+            lines = (typeof(lines) === 'string') ? [lines] : lines
+
+            // Process each line and replace white space with &nbsp;
+            // so that we can honor ascii art.
+            let new_lines = [];
+            for (let l of lines) {
+                new_lines.push(replace_spaces(l))
             }
-            return color_lines(lines);
+            return color_lines(new_lines)
         }
     }
 }
