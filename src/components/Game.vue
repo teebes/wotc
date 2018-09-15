@@ -1,37 +1,56 @@
 <template>
     <div class='game-view'>
         <div class='corner-map-region'></div>
-        <div class='console-region'>
-            <div class='console' @scroll="onScroll">
-                <div class='message'>Welcome</div>
-                <Message v-for="message in messages"
-                         v-bind:message="message" />
+
+        <Console :messages="messages" />
+
+        <div class='input-region'>
+            <div class='text-input'>
+                <div class='form-group'>
+                    <input type='text'
+                           class="form-control"
+                           autocomplete='off'
+                           autocorrect='off'
+                           autocapitalize='off'
+                           spellcheck='false'
+                           v-model="input"
+                           @keyup.enter='submit'/>
+                </div>
             </div>
         </div>
-        <div class='input-region'></div>
     </div>
 </template>
 
 <script>
-import Message from './Message.vue'
+import Console from './Console.vue'
 
 export default {
     name: 'Game',
     props: ['messages'],
     components: {
-        Message,
+        Console,
+    },
+    data() {
+        return {
+            'input': '',
+        }
     },
     watch: {
-        messages: function(newV, oldV) {
-            console.log('new: ' + newV.length + ' old: ' + oldV.length);
+        input: function(oldInput, newInput) {
+            //console.log('watch event');
         }
     },
     methods: {
-        onScroll(event) {
-            const element = event.target;
-            const distanceToBottom = element.scrollHeight - element.clientHeight - element.scrollTop;
-            const wasScrolledDown = (distanceToBottom === 0) ? true : false;
-            console.log(wasScrolledDown);
+        submit() {
+            const input = this.input;
+            this.input = '';
+            console.log('cmd: ' + this.input);
+
+            const cmd = {
+                type: 'cmd',
+                data: input,
+            }
+            this.$emit('send-cmd', cmd)
         }
     }
 }

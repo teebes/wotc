@@ -26,7 +26,7 @@
     </div>
 
     <div class='room-mobs'>
-        <div v-for="line in room.mob_lines" class='line'>
+        <div v-for="line in mob_lines" class='line'>
             <span v-for="chunk in line" class="chunk.color">
                 {{ chunk.text }}
             </span>
@@ -39,12 +39,17 @@
 </template>
 
 <script>
+import color_lines from '../../js/color-lines.js'
+
 export default {
     name: 'Room',
     props: ['room'],
     computed: {
         single_line_description() {
             return ''
+        },
+        mob_lines() {
+            return color_lines(this.room.mobs)
         }
     }
 }

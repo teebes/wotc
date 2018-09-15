@@ -14,7 +14,7 @@
             <input id="password" v-model="password" type="password" placeholder="Password">
         </div>
 
-        <button class='color-primary' type='submit' @click="onSubmit">LOGIN</button>
+        <button class='color-primary' type='submit' @click="$emit('submit-login')">LOGIN</button>
 
     </div>
 </template>
@@ -34,18 +34,6 @@ export default {
         onSubmit() {
             this.$emit('submit-login', this.charname, this.password);
             return;
-
-            const ws = new WebSocket(Config.wsServer);
-            ws.onopen = (event) => {
-                ws.send(JSON.stringify({
-                    type: 'login',
-                    data: {
-                        'charname': this.charname,
-                        'password': this.password,
-                    }
-                }));
-            }
-
         }
     }
 
