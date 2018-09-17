@@ -10,13 +10,15 @@
                       v-on:close-notification="notification.text = ''"/>
     </div>
 
-    <div id="timer-region"></div>
+
+    <Timer v-if="showTimer"/>
 
     <div class='main-view'>
 
         <Game v-if="isLoggedIn"
-              v-bind:messages="messages"
-              v-bind:map="map"
+              :messages="messages"
+              :map="map"
+              :current_room_key="current_room_key"
               v-on:send-cmd="sendCmd"/>
 
         <Login v-else v-on:submit-login="onSubmitLogin"/>
@@ -46,6 +48,7 @@ import Header from './Header.vue'
 import Help from './Help.vue'
 import Config from '../config.js'
 import Notification from './Notification.vue'
+import Timer from './Timer.vue'
 
 export default {
     name: 'Client',
@@ -54,7 +57,8 @@ export default {
         Game,
         Header,
         Help,
-        Notification
+        Notification,
+        Timer,
     },
     data() {
         return {
@@ -71,6 +75,14 @@ export default {
             },
 
             map: [],
+
+            current_room_key: null,
+
+            isCasting: false,
+
+            castMessage: null,
+
+            showTimer: false,
         }
     },
     mounted() {
@@ -82,6 +94,13 @@ export default {
     },
     methods: {
         onSubmitLogin (charname, password) {
+
+            if (!charname || !password) {
+                this.notification.isError = true
+                this.notification.text = 'Name and password are required.'
+                return false
+            }
+
             this.notification.text = 'Logging in...';
 
             const ws = new WebSocket(Config.wsServer);
@@ -106,21 +125,72 @@ export default {
             this.ws = ws;
         },
 
-        connect(data) {
-            this.notification.text = 'Connected'
-            this.isLoggedIn = true;
-            //this.messages.push()
-
-            this.map = data.map
-        },
-
-        onReceiveMessage(data) {
+        onReceiveMessage(message) {
             console.log("Message received:")
-            console.log(data)
-            if (data.type === 'connected') {
-                this.connect(data);
-            } else if (['incoming', 'room'].includes(data.type)) {
-                this.messages.push(data);
+            console.log(message)
+
+            if (message.type === 'connected') {
+                this.notificaiton.isError = false
+                this.notification.text = 'Connected'
+                this.map = message.data.map
+                this.showTimer = false
+                this.isLoggedIn = true
+            }
+
+            else if (message.type === 'room') {
+                this.messages.push(message)
+                this.current_room_key = message.data.key
+            }
+
+            else if (message.type === 'disconnected') {
+                this.notification.text('Connection closed')
+                this.isLoggedIn = false
+                this.showTimer = true
+            }
+
+            else if (message.type === 'welcome') {
+                this.messages.push(message)
+            }
+
+            else if (message.type === 'login-error') {
+                this.notification.isError = true
+                this.notification.text = message.data
+            }
+
+            else if (message.data) {
+
+                let lines = message.data
+                lines = typeof(lines) === 'string' ? [lines] : lines
+
+                for (const line of lines) {
+
+                    // If the line has nothing but casting symbols, assume
+                    // it's a cast
+                    if (/^[-=+*\s]+$/.exec(line)) {
+
+                        if (this.castMessage) {
+                            this.castMessage.data += line
+                        } else {
+                            this.castMessage = {
+                                type: 'cast',
+                                data: line,
+                            }
+                            this.messages.push(this.castMessage)
+                        }
+                    } else {
+                        this.castMessage = null;
+
+                        const message = { data: line }
+
+                        const promptRe = new RegExp("[\\*o]\\s(R\\s)?(S\\s)?HP:\\w+\\s((S|D)P:\\w+\\s)?MV:\\w+\\s(-(\\s[-\\w]+)+:\\s\\w+\\s)*>.*");
+                        if (promptRe.exec(line)) {
+                            message.type = 'prompt'
+                        }
+
+                        this.messages.push(message)
+                    }
+
+                }
             }
 
         },

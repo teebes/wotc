@@ -49,8 +49,6 @@ export default {
             return ''
         },
         mob_lines() {
-            console.log('===== MOBS =====')
-            console.log(this.room.mobs)
             return color_lines(this.room.mobs)
         }
     }

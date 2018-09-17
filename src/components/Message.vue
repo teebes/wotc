@@ -1,7 +1,10 @@
 <template>
     <Room v-if="message.type == 'room'"
           :room="message.data"/>
-    <Default v-else :lines="message.data"/>
+    <Cast v-else-if="message.type == 'cast'"
+          :text="message.data"/>
+    <pre v-else-if="message.type == 'welcome'" v-html="message.data"/>
+    <Default v-else :type="message.type" :line="message.data"/>
     </div>
 
 </template>
@@ -14,13 +17,15 @@
 
 import Room from './messages/Room.vue'
 import Default from './messages/Default.vue'
+import Cast from './messages/Cast.vue'
 
 export default {
     name: 'Message',
     props: ['message'],
     components: {
         Room,
-        Default
+        Default,
+        Cast
     }
 }
 </script>

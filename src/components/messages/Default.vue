@@ -1,12 +1,7 @@
 <template>
 
-<div class='message'>
-    <div v-for="line in new_lines">
-        <!--
-        <span v-for="chunk in line" :class='chunk.color'>{{ chunk.text }}</span>
-        -->
-        <span v-for="chunk in line" :class='chunk.color' v-html="chunk.text"/>
-    </div>
+<div class='message' :class='type'>
+    <span v-for="chunk in chunks" :class='chunk.color' v-html="chunk.text"/>
 </div>
 
 </template>
@@ -20,22 +15,12 @@ function replace_spaces(original_string) {
 
 export default {
     name: 'Default',
-    props: ['lines'],
+    props: ['line', 'type'],
     computed: {
-        new_lines: function() {
-            let lines = this.lines
-
-            // Make sure lines is always iterable
-            lines = (typeof(lines) === 'string') ? [lines] : lines
-
-            // Process each line and replace white space with &nbsp;
-            // so that we can honor ascii art.
-            let new_lines = [];
-            for (let l of lines) {
-                new_lines.push(replace_spaces(l))
-            }
-            return color_lines(new_lines)
-        }
+        chunks: function() {
+            return color_lines([this.line])[0]
+            return color_lines([replace_spaces(this.line)])[0]
+        },
     }
 }
 </script>

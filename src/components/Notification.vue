@@ -1,5 +1,6 @@
 <template>
-    <div class='ui-notification'>
+    <div class='ui-notification'
+         :class="{error: notification.isError}">
 
         <div class='notification-background'></div>
 

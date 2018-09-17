@@ -1,13 +1,14 @@
 <template>
     <div class='game-view'>
         <div class='corner-map-region'>
-            <canvas id="map" width="270" height="270"/>
+            <canvas ref="canvas" id="map" width="270" height="270"/>
         </div>
 
         <Console :messages="messages" />
 
         <div class='input-region'>
             <div class='text-input'>
+                <form @submit.prevent="submit">
                 <div class='form-group'>
                     <input type='text'
                            class="form-control"
@@ -15,9 +16,9 @@
                            autocorrect='off'
                            autocapitalize='off'
                            spellcheck='false'
-                           v-model="input"
-                           @keyup.enter='submit'/>
+                           v-model="input"/>
                 </div>
+                </form>
             </div>
         </div>
     </div>
@@ -25,16 +26,25 @@
 
 <script>
 import Console from './Console.vue'
+import Map from '../js/map.js'
 
 export default {
     name: 'Game',
-    props: ['messages'],
+    props: ['messages', 'map', 'current_room_key'],
     components: {
         Console,
     },
     data() {
         return {
             'input': '',
+        }
+    },
+    mounted() {
+        this.mapRenderer = new Map(this.map, this.$refs.canvas)
+    },
+    watch: {
+        current_room_key(new_key) {
+            this.mapRenderer.showView(new_key)
         }
     },
     methods: {
