@@ -1,5 +1,5 @@
 <template>
-<div class='room-view'>
+<div class='message room-view'>
     <div class='room-name'>{{ room.display_name }}</div>
 
     <div v-if="room.show_desc" class='room-description'>
@@ -40,12 +40,15 @@
 
 <script>
 import color_lines from '../../js/color-lines.js'
+import Config from '../../config.js'
 
 export default {
     name: 'Room',
     props: ['room'],
     computed: {
         single_line_description() {
+            if (window.innerWidth < Config.mobileBreak)
+                return this.room.description.join(' ');
             return ''
         },
         mob_lines() {

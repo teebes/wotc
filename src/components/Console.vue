@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class='console-and-scroll-tool'>
         <div class='console-region'>
             <div class='console' ref="console" @scroll="onScroll">
                 <div class='message'>Welcome</div>

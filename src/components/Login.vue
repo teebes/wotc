@@ -5,15 +5,14 @@
 
         <div class='form-group'>
             <label for="charname">Character Name</label>
-            <input id="charname" v-model="charname" placeholder="Character Name" @keyup.enter='submit'>
+            <input id="charname" v-model="charname" placeholder="Character Name" @keyup.enter='throttledSubmit'>
         </div>
 
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input id="password" v-model="password" type="password" placeholder="Password" @keyup.enter='submit'>
+            <input id="password" v-model="password" type="password" placeholder="Password" @keyup.enter='throttledSubmit'>
         </div>
-
 
         <button class='color-primary' type='submit' @click="throttledSubmit">LOGIN</button>
 

@@ -3,7 +3,9 @@
           :room="message.data"/>
     <Cast v-else-if="message.type == 'cast'"
           :text="message.data"/>
-    <pre v-else-if="message.type == 'welcome'" v-html="message.data"/>
+    <pre v-else-if="message.type == 'welcome'"
+         v-html="message.data"
+         class='message'/>
     <Default v-else :type="message.type" :line="message.data"/>
     </div>
 

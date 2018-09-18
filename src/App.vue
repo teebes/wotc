@@ -1,19 +1,20 @@
 <template>
   <div id="app">
-    <!--img alt="Vue logo" src="./assets/logo.png"-->
     <Client/>
-    <!--HelloWorld msg="Welcome to Your Vue.js App"/-->
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 import Client from './components/Client.vue'
+
+/*
+  Will document root events here:
+  * send-cmd: send WS cmd. Takes a {type: string, data: string} parameter.
+*/
 
 export default {
   name: 'app',
   components: {
-    HelloWorld,
     Client
   },
   created: function() {

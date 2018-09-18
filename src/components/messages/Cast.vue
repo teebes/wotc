@@ -1,5 +1,5 @@
 <template>
-<div class='cast'>{{ text }}</div>
+<div class='message cast'>{{ text }}</div>
 </template>
 
 <script>

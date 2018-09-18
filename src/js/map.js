@@ -32,7 +32,7 @@ const INVERSE_DIRECTIONS = {
 
 
 export default class {
-    constructor(rooms, canvas) {
+    constructor(rooms, canvas, options) {
         /*
             rooms: dictionary keyed by room key
             canvas: DOM canvas element
@@ -40,14 +40,15 @@ export default class {
 
         this.rooms = rooms
         this.canvas = canvas
+        this.options = options || {}
 
         // Create a 2d context in the canvas element
         this.ctx = canvas.getContext('2d');
 
         // Configuration / options
-        this.radius = 5;
+        this.radius = this.options.radius || 5;
+        this.width = this.options.width || 270;
         this.unit = 8;
-        this.width = 270;
     }
 
     showView(center_key) {
@@ -55,8 +56,13 @@ export default class {
             Only after knowing what room to show around can we determine
             which rooms to include, as well as what their coordinates are.
         */
+
         let renderRooms = [],
             cRoom = this.rooms[center_key]
+
+        // If the center key is not found in the map, we're not going to be
+        // able to do anything
+        if (!cRoom) return
 
         for (const rkey in this.rooms) {
             const room = this.rooms[rkey]

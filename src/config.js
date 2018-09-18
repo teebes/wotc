@@ -19,5 +19,9 @@ export default {
         '\x1b[33m',
         '\x1b[0m',
     ],
-    END_COLOR: '\x1b[0m'
+    END_COLOR: '\x1b[0m',
+
+    // Width below which the site starts to behave like a mobile site
+    mobileBreak: 650,
+
 }

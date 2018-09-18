@@ -91,6 +91,8 @@ export default {
                                Config.emulate.password);
         }
 
+        this.$root.$on('send-cmd', this.sendCmd)
+
     },
     methods: {
         onSubmitLogin (charname, password) {
@@ -122,6 +124,11 @@ export default {
                 this.onReceiveMessage(data);
             }
 
+            ws.onerror = (event) => {
+                this.notification.isError = true
+                this.notification.text = "No websocket connection available."
+            }
+
             this.ws = ws;
         },
 
@@ -143,7 +150,7 @@ export default {
             }
 
             else if (message.type === 'disconnected') {
-                this.notification.text('Connection closed')
+                this.notification.text = 'Connection closed'
                 this.isLoggedIn = false
                 this.showTimer = true
             }

@@ -106,6 +106,7 @@ button[type=submit] {
     padding: 0.75rem 1.5rem;
     font-weight: 700;
     letter-spacing: 1.2px;
+    outline: 0;
 
     &:hover { cursor: pointer; }
 }
@@ -274,17 +275,18 @@ button[type=submit] {
                     right: 0;
                     bottom: 0;
                     overflow-y: scroll;
+                    overflow-x: hidden;
 
-                    > div {
+                    > .message {
 
                         margin: 0;
 
-                        pre { color: inherit }
+                        &pre { color: inherit }
 
-                        &.echo { color: $color-text-hex-50; }
+                        &.cmd { color: $color-text-hex-50; }
 
                         &.room-view,
-                        //&.echo,
+
                         &.prompt {
                             margin-bottom: 10px;
                         }
@@ -352,7 +354,7 @@ button[type=submit] {
 
             .scroll-tool-region {
                 width: 100%;
-                //height: 50px;
+                z-index: 100;
                 position: absolute;
                 bottom: 65px;
                 display: flex;
