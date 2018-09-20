@@ -15,13 +15,7 @@
 
     <div class='main-view'>
 
-        <Game v-if="isLoggedIn"
-              :messages="messages"
-              :map="map"
-              :current_room_key="current_room_key"
-              :current_room_data="current_room_data"
-              :map_updated_ts="map_updated_ts"
-              v-on:send-cmd="sendCmd"/>
+        <Game v-if="isLoggedIn"/>
 
         <Login v-else v-on:submit-login="onSubmitLogin"/>
 
@@ -66,29 +60,14 @@ export default {
         return {
             isLoggedIn: false,
             showHelp: false,
-
-            // A message is composed of chunks, so that we can support
-            // things like differently colored blocks of text.
-            messages: [],
+            showTimer: false,
 
             notification: {
                 text: '',
                 isError: false,
             },
 
-            map: {},
-
-            current_room_key: null,
-
-            isCasting: false,
-
             castMessage: null,
-
-            showTimer: false,
-
-            current_room_data: {},
-
-            map_updated_ts: null,
         }
     },
     mounted() {
@@ -121,7 +100,6 @@ export default {
                         'password': password,
                     }
                 }
-                console.log(data);
                 ws.send(JSON.stringify(data));
             }
 
@@ -146,15 +124,12 @@ export default {
                 this.notification.isError = false
                 this.notification.text = 'Connected'
                 this.$store.commit('resetMap', message.data.map)
-                this.map = message.data.map
                 this.showTimer = false
                 this.isLoggedIn = true
             }
 
             else if (message.type === 'room') {
-                this.current_room_data = message.data
-                this.messages.push(message)
-                this.current_room_key = message.data.key
+                this.$store.commit('addMessage', message)
                 this.$store.commit('setCurrentRoomData', message.data)
             }
 
@@ -165,7 +140,7 @@ export default {
             }
 
             else if (message.type === 'welcome') {
-                this.messages.push(message)
+                this.$store.commit('addMessage', message)
             }
 
             else if (message.type === 'login-error') {
@@ -177,11 +152,9 @@ export default {
                 const new_rooms = {}
                 for (const room_data of message.data) {
                     new_rooms[room_data.key] = room_data
-                    //this.map[room_data.key] = room_data
-                    //this.$store.commit('updateMap')
                 }
                 this.$store.commit('addToMap', new_rooms)
-                this.current_room_key = message.data[0].key
+                this.$store.commit('setCurrentRoomData', message.data[0])
             }
 
             else if (message.type === 'rebuild') {
@@ -207,7 +180,7 @@ export default {
                                 type: 'cast',
                                 data: line,
                             }
-                            this.messages.push(this.castMessage)
+                            this.$store.commit('addMessage', message)
                         }
                     } else {
                         this.castMessage = null;
@@ -219,7 +192,7 @@ export default {
                             message.type = 'prompt'
                         }
 
-                        this.messages.push(message)
+                        this.$store.commit('addMessage', message)
                     }
 
                 }
@@ -228,7 +201,7 @@ export default {
         },
 
         sendCmd(data) {
-            this.messages.push(data)
+            this.$store.commit('addMessage', data)
             this.ws.send(JSON.stringify(data))
         }
 

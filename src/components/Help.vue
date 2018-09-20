@@ -14,7 +14,7 @@
 
     <p>This page offers a way to play it right here on your browser, using a websocket - telnet proxy. The websocket connection is encrypted, and we do not store passwords.</p>
 
-    <p>If you have questions, please ask them on Discord here: <a href='https://discord.gg/bEmMrPy'>https://discord.gg/bEmMrPy</a> or via direct messages to Thibaud#1067.</p>
+    <p>If you have questions, please ask them on Discord here: <a href='https://discord.gg/bEmMrPy'>https://discord.gg/bEmMrPy</a> (ask Stark in the channel, or Thibaud#1067 on direct messages).</p>
 
     <h2>Quick Tips</h2>
 
@@ -30,6 +30,9 @@
 
         <li>You can define variables with the <strong class='cmd'>#var</strong> command, for example: <span class='cmd'>#var opp human</span>. Combined with <span class='cmd'>#alias x kill h.@opp</span>, 'x' would now output 'kill h.human'.</li>
 
+        <li>Use tab in the input bar to complete the word you're currently typing based on the mobs in your room. So for example if there's a bandit in your room, doing <strong class='cmd'>k ba-&lt;tab&gt;</strong> will replace your input line with 'k bandit'.</li>
+
+        <li>Use the up and down arrow keys on your keyboard to cycle through your command history. Use arrow keys while holding the meta key (cmd on macs, windows key on windows) to spam directions. For example, on a mac cmd-up goes north.</li>
     </ul>
 
 </div>

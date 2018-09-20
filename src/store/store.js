@@ -10,19 +10,19 @@ const state = {
         rooms: {},
     },
 
-    map_updated_ts: null,
-
-    player_config: {},
-    player_aliases: {},
-    player_vars: {},
-
-    // Whenever a room message is received, is updated with a mutation
     current_room_data: {},
+
+    messages: [],
+
+    // Perhaps soon:
+    // player_config: {},
+    // player_aliases: {},
+    // player_vars: {},
 }
 
 const mutations = {
     updateMap(state) {
-        state.map_updated_ts = new Date().getTime()
+        state.map.updated_ts = new Date().getTime()
     },
 
     setCurrentRoomData(state, room_data) {
@@ -31,7 +31,7 @@ const mutations = {
 
     resetMap(state, new_map) {
         state.map.rooms = new_map
-        state.map_updated_ts = new Date().getTime()
+        state.map.updated_ts = new Date().getTime()
     },
 
     addToMap(state, rooms) {
@@ -44,7 +44,11 @@ const mutations = {
         for (const key in rooms) {
             state.map.rooms[key] = rooms[key]
         }
-        state.map_updated_ts = new Date().getTime()
+        state.map.updated_ts = new Date().getTime()
+    },
+
+    addMessage(state, message) {
+        state.messages.push(message)
     }
 }
 

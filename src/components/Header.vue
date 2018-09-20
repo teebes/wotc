@@ -3,7 +3,7 @@
 
         <div class='inner'>
             <div class='logo'>
-                <a href='/#'>
+                <a href='https://writtenrealms.com/'>
                     <img src='../assets/logo-black.svg' class='logo-badge'/>
                 </a>
             </div>

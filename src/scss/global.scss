@@ -61,6 +61,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
+    color: $color-secondary;
     @include font-title;
 }
 
@@ -433,9 +434,18 @@ button[type=submit] {
             transition: all .3s ease;
             position: fixed;
             top: 0;
-            overflow-y: scroll;
+            //overflow-y: scroll;
             height: 100%;
             width: 100%;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            .single-page {
+                overflow-y: auto;
+            }
+
         }
 
         .wot-help {
@@ -444,7 +454,7 @@ button[type=submit] {
             color: $color-text;
             font-size: 13px;
             border: 10px solid #020202;
-            padding: 0;
+            padding: 10px;
             max-width: 760px;
             margin: 0 auto;
             vertical-align: middle;
@@ -465,6 +475,12 @@ button[type=submit] {
                     padding: 5px;
 
                     &:hover { cursor: pointer; }
+                }
+            }
+
+            ul {
+                li:not(:last-child) {
+                    margin-bottom: 5px;
                 }
             }
         }

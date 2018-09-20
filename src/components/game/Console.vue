@@ -3,7 +3,7 @@
         <div class='console-region'>
             <div class='console' ref="console" @scroll="onScroll">
                 <div class='message'>Welcome</div>
-                <Message v-for="message in messages"
+                <Message v-for="message in $store.state.messages"
                          v-bind:message="message" />
             </div>
         </div>
@@ -35,7 +35,6 @@ function isScrolledDown(element) {
 
 export default {
     name: 'Console',
-    props: ['messages'],
     data() {
         return {
             scrollDistanceToBottom: 0,

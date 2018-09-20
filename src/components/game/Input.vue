@@ -28,7 +28,6 @@
 
 export default {
     name: 'Input',
-    props: ['current_room_data'],
     data() {
         return {
             'input': '',
