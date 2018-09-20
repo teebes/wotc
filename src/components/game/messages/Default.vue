@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import color_lines from '../../js/color-lines.js'
+import color_lines from '../../../js/color-lines.js'
 
 function replace_spaces(original_string) {
     return original_string.replace(/\s/g, '&nbsp;')

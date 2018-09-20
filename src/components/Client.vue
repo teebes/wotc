@@ -19,6 +19,8 @@
               :messages="messages"
               :map="map"
               :current_room_key="current_room_key"
+              :current_room_data="current_room_data"
+              :map_updated_ts="map_updated_ts"
               v-on:send-cmd="sendCmd"/>
 
         <Login v-else v-on:submit-login="onSubmitLogin"/>
@@ -74,7 +76,7 @@ export default {
                 isError: false,
             },
 
-            map: [],
+            map: {},
 
             current_room_key: null,
 
@@ -83,6 +85,10 @@ export default {
             castMessage: null,
 
             showTimer: false,
+
+            current_room_data: {},
+
+            map_updated_ts: null,
         }
     },
     mounted() {
@@ -139,14 +145,17 @@ export default {
             if (message.type === 'connected') {
                 this.notification.isError = false
                 this.notification.text = 'Connected'
+                this.$store.commit('resetMap', message.data.map)
                 this.map = message.data.map
                 this.showTimer = false
                 this.isLoggedIn = true
             }
 
             else if (message.type === 'room') {
+                this.current_room_data = message.data
                 this.messages.push(message)
                 this.current_room_key = message.data.key
+                this.$store.commit('setCurrentRoomData', message.data)
             }
 
             else if (message.type === 'disconnected') {
@@ -162,6 +171,22 @@ export default {
             else if (message.type === 'login-error') {
                 this.notification.isError = true
                 this.notification.text = message.data
+            }
+
+            else if (message.type === 'new_rooms') {
+                const new_rooms = {}
+                for (const room_data of message.data) {
+                    new_rooms[room_data.key] = room_data
+                    //this.map[room_data.key] = room_data
+                    //this.$store.commit('updateMap')
+                }
+                this.$store.commit('addToMap', new_rooms)
+                this.current_room_key = message.data[0].key
+            }
+
+            else if (message.type === 'rebuild') {
+                this.current_room_key = message.data.current_room_key
+                this.$store.commit('resetMap', message.data.map)
             }
 
             else if (message.data) {
@@ -206,6 +231,9 @@ export default {
             this.messages.push(data)
             this.ws.send(JSON.stringify(data))
         }
+
+
+
     },
 
 }

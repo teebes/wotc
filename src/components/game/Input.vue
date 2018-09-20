@@ -16,7 +16,8 @@
                    @keydown.meta.up="move('north')"
                    @keydown.meta.down="move('south')"
                    @keyup.up.prevent.stop="up"
-                   @keyup.down.prevent.stop="down"/>
+                   @keyup.down.prevent.stop="down"
+                   @keydown.tab.prevent.stop="tab"/>
         </div>
         </form>
     </div>
@@ -27,6 +28,7 @@
 
 export default {
     name: 'Input',
+    props: ['current_room_data'],
     data() {
         return {
             'input': '',
@@ -51,11 +53,12 @@ export default {
     methods: {
         submit() {
             let input = this.input;
+
             this.input = '';
 
             if (!input) {
-                if (this.last_command) {
-                    input = this.last_command
+                if (this.lastCommand) {
+                    input = this.lastCommand
                 } else {
                     return
                 }
@@ -130,6 +133,23 @@ export default {
 
             this.historyIndex = nextIndex
         },
+        tab() {
+            const tokens = this.input.split(/\s+/)
+            const last_token = tokens[tokens.length - 1]
+            let found = false
+
+            for (const keyword of this.$store.getters.roomKeywords) {
+                // If the last token matches one of the keywords, replace that
+                // token and reconstruct the input
+                if (keyword.match(last_token)) {
+                    tokens.splice(tokens.length - 1, 1, keyword)
+                    found = true
+                    break
+                }
+            }
+
+            if (found) this.input = tokens.join(' ')
+        }
     }
 }
 </script>

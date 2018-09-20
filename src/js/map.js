@@ -49,6 +49,12 @@ export default class {
         this.radius = this.options.radius || 5;
         this.width = this.options.width || 270;
         this.unit = 8;
+
+        this.last_center_key = null
+    }
+
+    refresh() {
+        this.showView(this.last_center_key)
     }
 
     showView(center_key) {
@@ -91,6 +97,8 @@ export default class {
         for (const room of renderRooms) {
             this.drawRoom(room, center_key);
         }
+
+        this.last_center_key = center_key
     }
 
     drawRoom(room, center_key) {

@@ -39,8 +39,8 @@
 </template>
 
 <script>
-import color_lines from '../../js/color-lines.js'
-import Config from '../../config.js'
+import color_lines from '../../../js/color-lines.js'
+import Config from '../../../config.js'
 
 export default {
     name: 'Room',
