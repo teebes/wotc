@@ -17,9 +17,11 @@
 export default {
     name: 'Notification',
     mounted() {
-        setTimeout(() => {
-            this.$emit('close-notification');
-        }, 3000);
+        if (this.notification.autoHide) {
+            setTimeout(() => {
+                this.$emit('close-notification');
+            }, 3000);
+        }
     },
     props: ['notification'],
 }

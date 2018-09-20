@@ -51,6 +51,7 @@ export default {
     padding: 30px 40px;
 
     h1 {
+        color: #EBEBEB;
         margin: 0 0 1.5em 0;
         display: block;
         width: 100%;

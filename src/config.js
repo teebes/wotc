@@ -1,10 +1,13 @@
 export default {
-    wsServer: 'ws://localhost:9999/cmd',
+    wsServer: 'wss://writtenrealms.com:9999/cmd',
+    //wsServer: 'ws://localhost:9999/cmd',
+
     emulate: {
         charname: 'a',
         password: 'b',
     },
-    //emulate: false,
+    emulate: false,
+
     COLORS: {
         '\x1b[31m': 'red',
         '\x1b[36m': 'blue',

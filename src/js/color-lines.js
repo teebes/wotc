@@ -1,13 +1,6 @@
 import Config from '../config.js'
 
 
-class Rectangle {
-  constructor(height, width) {
-    this.height = height;
-    this.width = width;
-  }
-}
-
 var find_color = function(text) {
 
     var matched_color = null,
@@ -58,13 +51,13 @@ export default function(orig_lines) {
             ]
         ]
     */
-    var lines = [];
+    const lines = [];
 
      for (let line of orig_lines) {
 
         // Blocks is what the line gets broken up into
-        var blocks = [],
-            remainder = line.trim();
+        const blocks = []
+        let remainder = line.trim();
 
         if (!remainder || remainder == Config.END_COLOR) return true;
 
@@ -82,7 +75,7 @@ export default function(orig_lines) {
 
             // Split on the color code and store the chunk of text
             // (if any) that was before it.
-            var tokens = remainder.split(color_code),
+            const tokens = remainder.split(color_code),
                 before = tokens.shift();
                 remainder = tokens.join(color_code);
 
@@ -91,12 +84,13 @@ export default function(orig_lines) {
             }
 
 
-            while(true) {
+            var t = true
+            while(t) {
                 var new_color = find_color(remainder);
                 if (new_color) {
-                    var tokens = remainder.split(new_color);
-                    var colored_section = tokens.shift();
-                    var remainder = tokens.join(new_color);
+                    const tokens = remainder.split(new_color);
+                    const colored_section = tokens.shift();
+                    remainder = tokens.join(new_color);
                     blocks.push({
                         color: Config.COLORS[color_code],
                         text: colored_section

@@ -65,6 +65,7 @@ export default {
             notification: {
                 text: '',
                 isError: false,
+                autoHide: true,
             },
 
             castMessage: null,
@@ -88,11 +89,13 @@ export default {
                 return false
             }
 
+
+            this.notification.autoHide = false
             this.notification.text = 'Logging in...';
 
             const ws = new WebSocket(Config.wsServer);
 
-            ws.onopen = (event) => {
+            ws.onopen = () => {
                 const data = {
                     type: 'login',
                     data: {
@@ -108,7 +111,7 @@ export default {
                 this.onReceiveMessage(data);
             }
 
-            ws.onerror = (event) => {
+            ws.onerror = () => {
                 this.notification.isError = true
                 this.notification.text = "No websocket connection available."
             }
@@ -117,12 +120,20 @@ export default {
         },
 
         onReceiveMessage(message) {
+            // eslint-disable-next-line
             console.log("Message received:")
+            // eslint-disable-next-line
             console.log(message)
 
             if (message.type === 'connected') {
-                this.notification.isError = false
-                this.notification.text = 'Connected'
+                this.notification.text = ''
+                this.notification.autoHide = true
+                this.$nextTick(() => {
+                    this.notification.isError = false
+                    this.notification.text = 'Connected'
+                })
+                // this.notification.isError = false
+                // this.notification.text = 'Connected'
                 this.$store.commit('resetMap', message.data.map)
                 this.showTimer = false
                 this.isLoggedIn = true
@@ -180,7 +191,7 @@ export default {
                                 type: 'cast',
                                 data: line,
                             }
-                            this.$store.commit('addMessage', message)
+                            this.$store.commit('addMessage', this.castMessage)
                         }
                     } else {
                         this.castMessage = null;
