@@ -30,6 +30,7 @@ const INVERSE_DIRECTIONS = {
     'down': 'up',
 }
 
+import _ from 'lodash'
 
 export default class {
     constructor(rooms, canvas, options) {
@@ -63,20 +64,19 @@ export default class {
             which rooms to include, as well as what their coordinates are.
         */
 
-        let renderRooms = [],
-            cRoom = this.rooms[center_key]
+        this.renderRooms = {}
+        const cRoom = _.clone(this.rooms[center_key])
 
         // If the center key is not found in the map, we're not going to be
         // able to do anything
         if (!cRoom) return
 
         for (const rkey in this.rooms) {
-            const room = this.rooms[rkey]
+            const room = _.clone(this.rooms[rkey])
 
-            if (Math.abs(room.x - cRoom.x) <= (this.radius + 1)
-                && Math.abs(room.y - cRoom.y) <= (this.radius + 1)
+            if (Math.abs(room.x - cRoom.x) < (this.radius + 4)
+                && Math.abs(room.y - cRoom.y) < (this.radius + 4)
                 && room.z === cRoom.z) {
-                renderRooms.push(room);
 
                 // This says, start at half the width of the map, then account
                 // for half of an exit, and then do 3 units (2 half room widths
@@ -89,13 +89,16 @@ export default class {
                     this.width / 2
                     - this.unit
                     + 3 * this.unit * (cRoom.y - room.y));
+
+                this.renderRooms[room.key] = room;
+
             }
         }
 
         // Do the actual rendering
         this.ctx.clearRect(0, 0, this.width, this.width);
-        for (const room of renderRooms) {
-            this.drawRoom(room, center_key);
+        for (const room_key in this.renderRooms) {
+            this.drawRoom(this.renderRooms[room_key], center_key);
         }
 
         this.last_center_key = center_key
@@ -207,9 +210,9 @@ export default class {
     }
 
     drawTriangle(x, y, options) {
-        var options = options || {},
-            color = options.selected ? COLORS.white : COLORS.black,
-            size = options.size || 2;
+        options = options || {};
+        const color = options.selected ? COLORS.white : COLORS.black,
+              size = options.size || 2;
 
         this.ctx.beginPath();
         this.ctx.fillStyle = color;
@@ -226,26 +229,20 @@ export default class {
     }
 
     drawConnection(room, dir) {
-        var revDir = INVERSE_DIRECTIONS[dir];
-        var exitRoomAttrs = room[dir];
+        const revDir = INVERSE_DIRECTIONS[dir];
+        const exitRoomAttrs = room[dir];
         if (!exitRoomAttrs) return;
 
-        var fromCoords = this.getExitCoord(room, dir);
+        const fromCoords = this.getExitCoord(room, dir)
+        let toCoords
 
-        var exitRoom = this.rooms[exitRoomAttrs.key];
+        var exitRoom = this.renderRooms[exitRoomAttrs.key];
         if (exitRoom && exitRoom.z === room.z) {
             // exit room is in the map, and on the same z-axis
-
-            var toCoords = this.getExitCoord(exitRoom, revDir);
-
-            // Look for the particular case where the exit room is either
-            // up or down
-            if (exitRoom.z != room.z) {
-                this.drawSlope(toCoords, dir, exitRoom.z - room.z);
-            }
+            toCoords = this.getExitCoord(exitRoom, revDir);
 
         } else { // exit room not in the map
-            var toCoords = [fromCoords[0], fromCoords[1]];
+            toCoords = [fromCoords[0], fromCoords[1]];
             if (dir === 'south') {
                 toCoords[1] += this.unit;
             } else if (dir === 'north') {
