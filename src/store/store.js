@@ -49,6 +49,10 @@ const mutations = {
 
     addMessage(state, message) {
         state.messages.push(message)
+    },
+
+    clearMessages(state) {
+        state.messages = []
     }
 }
 

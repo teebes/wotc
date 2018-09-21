@@ -148,6 +148,8 @@ export default {
                 this.notification.text = 'Connection closed'
                 this.isLoggedIn = false
                 this.showTimer = true
+                this.$store.commit('clearMessages')
+
             }
 
             else if (message.type === 'welcome') {
