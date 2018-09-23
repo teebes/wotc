@@ -80,6 +80,11 @@ export default {
         this.$root.$on('send-cmd', this.sendCmd)
 
     },
+
+    destroyed() {
+        this.$root.$off('send-cmd', this.sendCmd)
+    },
+
     methods: {
         onSubmitLogin (charname, password) {
 

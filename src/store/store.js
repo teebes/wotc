@@ -13,6 +13,7 @@ const state = {
     current_room_data: {},
 
     messages: [],
+    message_counter: 1,
 
     // Perhaps soon:
     // player_config: {},
@@ -48,7 +49,15 @@ const mutations = {
     },
 
     addMessage(state, message) {
+        // Construct a message key with ts + message number
+        message.mkey = new Date().getTime() + '-' + state.message_counter
         state.messages.push(message)
+        const length = state.messages.length,
+              max_length = 200
+        if (state.messages.length > 200) {
+            state.messages.splice(0, length - max_length)
+        }
+        state.message_counter += 1
     },
 
     clearMessages(state) {
@@ -65,9 +74,11 @@ const getters = {
         // Final result
         const keywords = []
         const mobs = state.current_room_data.mobs || []
+        const items = state.current_room_data.items || []
+        const things = mobs.concat(items)
 
-        for (const line of mobs) {
-            for (const word of line.split(/[\s,\.]+/)) {
+        for (const line of things) {
+            for (let word of line.split(/[\s,\.]+/)) {
                 if (!word) continue
 
                 word = word.toLowerCase()

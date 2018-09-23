@@ -1,4 +1,5 @@
 <template>
+
 <div class='message room-view'>
     <div class='room-name'>{{ room.display_name }}</div>
 
@@ -34,7 +35,6 @@
     </div>
 
     <div>{{ room.prompt }}</div>
-
 </div>
 </template>
 

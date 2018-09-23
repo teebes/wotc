@@ -33,9 +33,12 @@ export default {
             this.$store.state.current_room_data.key)
     },
     updated() {
-        if (this.mapRenderer)
-            this.mapRenderer.showView(
-                this.$store.state.current_room_data.key)
+        if (this.mapRenderer) {
+            this.$nextTick(() => {
+                this.mapRenderer.showView(
+                    this.$store.state.current_room_data.key)
+            })
+        }
     },
     methods: {
         switchMap() {

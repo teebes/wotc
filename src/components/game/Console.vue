@@ -4,7 +4,8 @@
             <div class='console' ref="console" @scroll="onScroll">
                 <div class='message'>Welcome</div>
                 <Message v-for="message in $store.state.messages"
-                         v-bind:message="message" />
+                         :message="message"
+                         :key="message.mkey"/>
             </div>
         </div>
         <div class='scroll-tool-region'>
