@@ -53,7 +53,7 @@ var EMULATE = {
     charname: 'somechar',
     password: 'somepass'
 };
-//EMULATE = false;
+EMULATE = false;
 
 define(function(require) {
     "use strict";
