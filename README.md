@@ -1,21 +1,16 @@
-# wotc
+# The Wheel of Time MUD Web Client
 
-## Project setup
+## Pre-reqs
+
+* Node v10.10.2+ / NPM v6.4.1+ https://nodejs.org/en/download/
+* Bower v1.8.0+ https://bower.io/#install-bower
+* Ruby v2.2+ / Gem v2.0+ http://www.ruby-lang.org/en/downloads/
+* Compass v1.0+ http://compass-style.org/install/
+
+## Installation
+
 ```
-npm install
+bower install
+compass compile
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```

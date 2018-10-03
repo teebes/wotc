@@ -1,0 +1,57 @@
+<div class='room-name'>{{ data.display_name }}</div>
+
+{{#if data.show_desc}}
+<div class='room-description'>
+    {{#each data.description}}
+        <div>{{ this }}</div>
+    {{/each}}
+
+    {{#if single_line_description}}
+        <div>{{ single_line_description }}</div>
+    {{/if}}
+</div>
+{{/if}}
+
+<div class='room-exit'>{{ data.exits }}</div>
+
+{{#if data.note}}
+<div class='room-note'>{{ data.note }}</div>
+{{/if}}
+
+<div class='room-autotrack'>
+    {{#each data.autotrack_lines}}
+        <div>{{ this }}</div>
+    {{/each}}
+</div>
+
+<div class='room-autoscan'>
+    {{#each data.autoscan_lines}}
+        <div>{{ this }}</div>
+    {{/each}}
+</div>
+
+<div class='room-items'>
+    {{#each data.items}}
+        <div>{{ this }}</div>
+    {{/each}}
+</div>
+
+{{!--
+<div class='room-mobs'>
+    {{#each data.mobs}}
+        <div>{{ this }}</div>
+    {{/each}}
+</div>
+--}}
+
+<div class='room-mobs'>
+    {{#each mob_lines}}
+        <div class='line'>
+            {{#each this}}
+            <span class='{{ this.color }}'>{{ this.text}}</span>
+            {{/each}}
+        </div>
+    {{/each}}
+</div>
+
+<div>{{ data.prompt }}</div>

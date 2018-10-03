@@ -1,0 +1,14 @@
+{
+  "name": "wotc",
+  "version": "0.0.1",
+  "private": "true",
+  "dependencies": {
+    "jquery": "~2.1.3",
+    "backbone": "~1.3.3",
+    "backbone.marionette": "~3.5",
+    "require-handlebars-plugin": "~0.11.2",
+    "json2": "*",
+    "requirejs": "2.2.0",
+    "underscore": "1.8.3"
+  }
+}
