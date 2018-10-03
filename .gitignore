@@ -19,3 +19,9 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+# Installed / compiled components
+bower_components
+stylesheets
+.sass-cache
+

@@ -1,0 +1,1567 @@
+require.config({
+    baseUrl: "/wotc/js",
+
+    deps: ['marionette', 'wot'],
+
+    paths: {
+        // Config file
+        config: '../config-wot',
+
+        // Core
+        jquery: '../bower_components/jquery/dist/jquery.min',
+        underscore: '../bower_components/underscore/underscore',
+        backbone: '../bower_components/backbone/backbone',
+        marionette: '../bower_components/backbone.marionette/lib/backbone.marionette',
+        json2: '../bower_components/json2/json2',
+
+        // Handlebars
+        hbs: '../bower_components/require-handlebars-plugin/hbs',
+        templates: '../templates',
+    },
+
+    // handlebars build params
+    pragmasOnSave: {
+        excludeHbsParser : true,
+        excludeHbs: true,
+        excludeAfterBuild: true
+    },
+
+    shim: {
+        "underscore": {
+            exports: "_"
+        },
+        "backbone": {
+            deps: ["jquery", "underscore"],
+            exports: "Backbone"
+        },
+        "json2": {
+            exports: "JSON"
+        },
+    },
+
+    // how many seconds for requirejs to wait to load depdencies
+    waitSeconds: 30
+});
+
+
+var EMULATE = {
+    charname: 'somechar',
+    password: 'somepass'
+};
+EMULATE = false;
+
+define(function(require) {
+    "use strict";
+
+    var _ = require('underscore'),
+        $ = require('jquery'),
+        Backbone = require('backbone'),
+        Marionette = require('marionette'),
+        Config = require('config'),
+
+        IndexTemplate = require('hbs!templates/wot/index'),
+        LoginTemplate = require('hbs!templates/wot/login'),
+        GameTemplate = require('hbs!templates/wot/game'),
+        RoomMessageTemplate = require('hbs!templates/wot/message-room'),
+        DefaultMessageTemplate = require('hbs!templates/wot/message-default'),
+        HelpTemplate = require('hbs!templates/wot/help'),
+        GameInputTemplate = require('hbs!templates/wot/input'),
+        ModalTemplate = require('hbs!templates/wot/modal'),
+        UINotificationTemplate = require('hbs!templates/wot/ui_notification_message'),
+
+        Channel = Backbone.Wreqr.radio.channel('wot');
+
+    /*
+        Utils
+    */
+
+    function splitMulti(str, tokens){
+        /*
+            From:
+
+            https://stackoverflow.com/questions/650022/how-do-i-split-a-string-with-multiple-separators-in-javascript
+        */
+
+        var tempChar = tokens[0]; // We can use the first token as a temporary join character
+        for(var i = 1; i < tokens.length; i++){
+            str = str.split(tokens[i]).join(tempChar);
+        }
+        str = str.split(tempChar);
+        return str;
+    }
+
+    var COLORS = {
+        '\x1b[31m': 'red',
+        '\x1b[36m': 'blue',
+        '\x1b[32m': 'green',
+        '\x1b[33m': 'yellow',
+        '\x1b[0m': 'normal',
+    }
+    var COLOR_LIST = [
+        '\x1b[31m',
+        '\x1b[36m',
+        '\x1b[32m',
+        '\x1b[33m',
+        '\x1b[0m',
+    ]
+    var END_COLOR = '\x1b[0m';
+
+    var find_color = function(text) {
+
+        var matched_color = null,
+            shortest_length = 1000;
+
+        _.each(COLOR_LIST, function(color) {
+            if (text.includes(color)) {
+                // Find the length of the chunk of text preceding the color
+                var pre_length = text.split(color)[0].length;
+                if (pre_length < shortest_length) {
+                    shortest_length = pre_length;
+                    matched_color = color;
+                }
+            }
+        });
+
+        return matched_color;
+    }
+
+    var color_lines = function(orig_lines) {
+        /*
+            For each line, we have to determine whether it is a single
+            block of text all in one color, or whether it is composed
+            of colored blocks.
+
+            Example output of two lines, one of which has color:
+
+            lines = [
+                [
+                    {
+                        'color': 'normal',
+                        'text': 'This is just a normal line of text.'
+                    }
+                ],
+                [
+                    {
+                        'color': 'normal',
+                        'text', 'This is is a line with a ',
+                    },
+                    {
+                        'color': 'red',
+                        'text', 'red word',
+                    },
+                    {
+                        'color': 'normal',
+                        'text', ' in the middle of it',
+                    },
+                ]
+            ]
+        */
+        var lines = [];
+
+         _.each(orig_lines, function(line) {
+
+            // Blocks is what the line gets broken up into
+            var blocks = [],
+                remainder = line.trim();
+
+            if (!remainder || remainder == END_COLOR) return true;
+
+            // Go through the line and see if there are colors in it
+            while (remainder.length) {
+                var color_code = find_color(remainder);
+
+                if (!color_code) {
+                    blocks.push({
+                        color: 'normal',
+                        text: remainder,
+                    })
+                    break
+                }
+
+                // Split on the color code and store the chunk of text
+                // (if any) that was before it.
+                var tokens = remainder.split(color_code),
+                    before = tokens.shift();
+                    remainder = tokens.join(color_code);
+
+                if (before) {
+                    blocks.push({color: 'normal', text: before});
+                }
+
+
+                while(true) {
+                    var new_color = find_color(remainder);
+                    if (new_color) {
+                        var tokens = remainder.split(new_color);
+                        var colored_section = tokens.shift();
+                        var remainder = tokens.join(new_color);
+                        blocks.push({
+                            color: COLORS[color_code],
+                            text: colored_section
+                        });
+                        color_code = new_color;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (remainder) {
+                    blocks.push({
+                        color: COLORS[color_code],
+                        text: remainder,
+                    });
+                }
+                remainder = '';
+            }
+
+            lines.push(blocks);
+
+        });
+
+        return lines;
+    }
+
+
+    var NORTH = 'north',
+        EAST = 'east',
+        WEST = 'west',
+        SOUTH = 'south',
+        UP = 'up',
+        DOWN = 'down',
+        INVERSE_DIRECTIONS = {
+            NORTH: SOUTH,
+            north: SOUTH,
+            EAST: WEST,
+            east: WEST,
+            SOUTH: NORTH,
+            south: NORTH,
+            WEST: EAST,
+            west: EAST,
+            UP: DOWN,
+            up: DOWN,
+            DOWN: UP,
+            down: UP,
+        };
+
+
+    /* VIEWS */
+
+    var TimerView = Backbone.Marionette.ItemView.extend({
+        className: 'timer-view',
+        template: false,
+        initialize: function() {
+            this.tstart = new Date();
+        },
+        onShow: function() {
+            var self = this;
+            this.intervalId = setInterval(function() {
+                self.render();
+            }, 1000);
+        },
+        onRender: function() {
+            var seconds_since = Math.ceil((new Date() - this.tstart) / 1000);
+
+            var minutes = Math.floor(seconds_since / 60);
+            var seconds = seconds_since - minutes * 60;
+
+            if (seconds < 10) {
+                seconds = '0' + seconds;
+            }
+
+            this.$el.html(minutes + ':' + seconds);
+        },
+        onDestroy: function() {
+            clearInterval(this.intervalId);
+        }
+    });
+
+    var InputView = Backbone.Marionette.ItemView.extend({
+        /*
+
+        Magic input box. Has two implementations of a repeat-command pattern,
+        configurable via the ``repeatHighlight`` option.
+
+        */
+        className: 'text-input',
+        template: GameInputTemplate,
+        ui: {
+            input: 'input',
+            sendButton: 'button',
+        },
+        events: {
+            'submit form': 'onSubmit',
+            'keyup input': 'onKeyUp',
+        },
+        initialize: function() {
+            this.commandHistory = [];
+            this.historyIndex = -1;
+            this.originalInput = null;
+        },
+        onShow: function() {
+            // focus input bar
+            this.ui.input.focus();
+        },
+        onSubmit: function(event) {
+            event.preventDefault();
+            var cmd = this.ui.input.val();
+
+            if (!cmd) {
+                // Empty enter means repeat last cmd
+                if (this.lastCommand) {
+                    cmd = this.lastCommand;
+                }
+            }
+
+            this.lastCommand = cmd;
+
+            this.commandHistory = _.without(this.commandHistory, cmd)
+
+            // Second, we insert the newest command at the bottom of the
+            // stack so that [0] pulls the most recent command
+            this.commandHistory.splice(0, 0, cmd)
+
+            // Only keep history through 20 recent
+            if (this.commandHistory.length > 20) {
+                this.commandHistory.splice(20)
+            }
+
+            Channel.vent.trigger('cmd', cmd)
+
+            this.ui.input.val('')
+            return false;
+        },
+        onKeyUp: function(event) {
+            var upArrow = 38,
+                downArrow = 40,
+                input = this.ui.input.val();
+
+            if (event.which == upArrow) {
+                if (input && this.commandHistory.length == 0) {
+                    return
+                }
+
+                var nextIndex = this.historyIndex + 1
+                // If no command history item corresponds to that item, do nothing
+                if (nextIndex > this.commandHistory.length - 1) return
+
+                if (nextIndex == 0 && !this.originalInput)
+                    this.originalInput = input
+
+                this.ui.input.val(this.commandHistory[nextIndex])
+                this.historyIndex = nextIndex
+
+            } else if (event.which == downArrow) {
+                if (!input && this.commandHistory.length == 0) {
+                    return
+                } else if (this.historyIndex <= -1) {
+                    return
+                }
+
+                var nextIndex = this.historyIndex - 1
+
+                if (nextIndex === -1) {
+                    if (this.originalInput) {
+                        this.ui.input.val(this.originalInput)
+                        this.originalInput = ''
+                    } else {
+                        this.ui.input.val('')
+                    }
+                } else {
+                    this.ui.input.val(this.commandHistory[nextIndex])
+                }
+
+                this.historyIndex = nextIndex
+            }
+        }
+    });
+
+    var DefaultMessageView = Backbone.Marionette.ItemView.extend({
+        template: DefaultMessageTemplate,
+        className: function() {
+            var className = 'message';
+            if (this.model.attributes.echo) {
+                className += ' echo';
+            }
+            return className;
+        },
+        templateHelpers: function() {
+            var lines = [this.model.attributes.data],
+                coloredData = color_lines(lines)[0];
+            return {
+                chunks: coloredData
+            };
+        }
+    });
+
+    var PromptView = DefaultMessageView.extend({
+        className: 'message prompt',
+    });
+
+    var CastingView = Backbone.Marionette.ItemView.extend({
+        template: false,
+        className: 'message casting',
+        initialize: function() {
+            // Start with the line
+            this.symbols = this.model.attributes.data;
+        },
+        onShow: function() {
+            this.listenTo(Channel.vent, 'cast:add', this.onAddSymbol);
+            this.listenToOnce(Channel.vent, 'cast:stop', this.onCastStop);
+        },
+        onRender: function() {
+            this.$el.html(this.symbols);
+        },
+        onAddSymbol: function(symbol) {
+            symbol = symbol || ' ';
+            this.symbols += symbol;
+            this.render();
+        },
+        onCastStop: function() {
+            this.stopListening(Channel.vent, 'cast:add');
+        }
+    });
+
+    var RoomMessageView = Backbone.Marionette.ItemView.extend({
+        className: 'message room-view',
+        template: RoomMessageTemplate,
+        templateHelpers: function() {
+            var data = {};
+
+            if (Backbone.$(document).width() < 600) {
+                data.single_line_description = this.model.attributes.data.description.join(' ');
+                this.model.attributes.data.description = [];
+            }
+
+            data.mob_lines = color_lines(this.model.attributes.data.mobs);
+
+            return data;
+        }
+    });
+
+    var WelcomeView = Backbone.Marionette.ItemView.extend({
+        template: false,
+        onRender: function() {
+            var pre = Backbone.$('<pre/>');
+            pre.text(this.model.attributes.data);
+            this.$el.html(pre);
+        }
+    });
+
+    var ConsoleView = Backbone.Marionette.CollectionView.extend({
+        className: 'console',
+        childView: DefaultMessageView,
+        bufferSize: 3000,
+        events: {
+            'scroll': 'onScroll',
+        },
+
+        onShow: function() {
+            this.listenTo(Channel.vent, 'scroll:bottom', this.scrollToBottom);
+        },
+        onScroll: function() {
+            var distanceToBottom = this.getDistanceToBottom()
+            if (distanceToBottom === 0) {
+                Channel.vent.trigger('scroll:reset');
+            } else {
+                Channel.vent.trigger('scroll:active');
+            }
+        },
+        getDistanceToBottom: function() {
+            var element = this.$el[0],
+                distanceToBottom = (element.scrollHeight
+                                        - element.clientHeight
+                                        - element.scrollTop);
+            return distanceToBottom;
+        },
+        scrollToBottom: function() {
+            var element = this.$el[0];
+            element.scrollTop = element.scrollHeight;
+        },
+
+        initialize: function() {
+            // Counter to be increased for the message order, so that
+            // even after culling the we get an ever increasing negative
+            // ordering number
+            this.messageCounter = 0;
+
+            this.isCasting = false;
+        },
+        getChildView: function(message) {
+            if (message.attributes.type === 'room')
+                return RoomMessageView;
+            else if (message.attributes.type === 'welcome')
+                return WelcomeView;
+            else if (message.attributes.type === 'casting') {
+                return CastingView;
+            } else if (message.attributes.type === 'prompt') {
+                return PromptView;
+            }
+            return DefaultMessageView;
+        },
+        onBeforeAddChild: function(childView) {
+            var distanceToBottom = this.getDistanceToBottom();
+            this.wasScrolledDown = (distanceToBottom === 0) ? true : false;
+        },
+        onAddChild: function(childView) {
+            // See if there the collection needs to be culled
+            var delta = this.collection.length - this.bufferSize;
+            if (delta > 0) {
+                this.collection.remove(this.collection.slice(0, delta));
+            }
+
+            var element = this.$el[0];
+            if (this.wasScrolledDown) {
+                element.scrollTop = element.scrollHeight;
+            }
+
+        },
+
+        attachHtml: function(collectionView, childView, index) {
+
+            if (this.isCasting) {
+
+                if (childView.model.attributes.isCasting) {
+                    Channel.vent.trigger('cast:add', childView.model.attributes.data);
+                    return;
+                } else {
+                    this.isCasting = false;
+                    Channel.vent.trigger('cast:stop');
+                }
+            } else if (childView.model.attributes.isCasting) {
+                this.isCasting = true;
+            }
+
+            Backbone.Marionette.CollectionView.prototype.attachHtml.apply(
+                this, arguments);
+        },
+    });
+
+    // Scroll tool view
+    var ScrollToolView = Backbone.Marionette.ItemView.extend({
+        className: 'scroll-tool-view',
+        template: false,
+        initialize: function() {
+            this.label = "JUMP TO BOTTOM";
+            this.count = 0;
+        },
+        onRender: function() {
+            this.$el.html("<div class='new-messages'>" + this.label + "</div>");
+        },
+        onShow: function() {
+            this.listenTo(Channel.vent, 'receive', function() {
+                this.count += 1;
+                this.label = "NEW MESSAGES (" + this.count + ")";
+                this.render();
+            }, this);
+        }
+    });
+
+    var LoginView = Backbone.Marionette.ItemView.extend({
+        className: 'login-view single-form',
+        template: LoginTemplate,
+        ui: {
+            submitButton: 'button[type=submit]',
+            username: 'input[name=charname]',
+        },
+        events: {
+            'click @ui.submitButton': 'onClickSubmit',
+            'keypress': function (event) {
+                if (event.which === 13) {
+                    event.preventDefault();
+                    this.onClickSubmit();
+                }
+            },
+        },
+        onShow: function() {
+            this.ui.username.focus();
+        },
+        onClickSubmit: function() {
+            var data = this.getFormData();
+            if (data) {
+                // clear required fields
+                this.$('.form-control').removeClass('has-error');
+                Channel.vent.trigger('login', data);
+            }
+            return false;
+        },
+        getFormData: function() {
+            /*
+                For each .form-control form field, take the 'name' attribute
+                for the key and get the value from jquery.val
+
+                Returns data if all the data is available, null if there
+                was an error.
+            */
+            var data = {},
+                missingFields = [];
+
+            this.$('.form-control').each(function(index, formControl) {
+                var $formControl = Backbone.$(formControl),
+                    name = $formControl.attr('name'),
+                    value = $formControl.val();
+
+                if ($formControl.attr('required') === 'required' && value === '') {
+                    $formControl.addClass('has-error');
+                    missingFields.push(name);
+                }
+
+                if ($formControl.attr('type') === 'checkbox') {
+                    value = $formControl.is(':checked');
+                }
+
+                data[$formControl.attr('name')] = value;
+            });
+
+            if (missingFields.length) return null;
+
+            return data;
+        },
+    });
+
+    var GameView = Backbone.Marionette.LayoutView.extend({
+        /*
+            Game view displayed after a successful login
+        */
+
+        className: 'game-view',
+        template: GameTemplate,
+        regions: {
+            mapRegion: '.corner-map-region',
+            consoleRegion: '.console-region',
+            inputRegion: '.input-region',
+        },
+        events: {
+            'click .corner-map-region': 'onClickMap',
+        },
+        onShow: function() {
+            this.collection = new Backbone.Collection();
+            this.collection.add(new Backbone.Model({
+                type: 'incoming',
+                data: 'Connected.'
+            }));
+
+            this.game_map = this.options.game_map;
+            this.current_room_key = null;
+            this.mapView = null;
+
+            this.consoleRegion.show(new ConsoleView({
+                collection: this.collection,
+            }));
+
+            this.inputRegion.show(new InputView());
+
+            this.listenTo(Channel.vent, 'receive', this.onReceive);
+            this.listenTo(Channel.vent, 'send', this.onSend);
+        },
+
+        showBigMap: function() {
+            this.mapView = new MapView({
+                map: this.game_map,
+                centerKey: this.current_room_key,
+                selectedKey: this.current_room_key,
+                width: 270,
+                radius: 5,
+                clickable: false,
+            })
+            this.mapRegion.show(this.mapView);
+            this.mapSize = 'big';
+        },
+
+        showSmallMap: function() {
+            this.mapView = new MapView({
+                map: this.game_map,
+                centerKey: this.current_room_key,
+                selectedKey: this.current_room_key,
+                width: 78,
+                radius: 1,
+                clickable: false,
+            })
+            this.mapRegion.show(this.mapView);
+            this.mapSize = 'small';
+        },
+
+        onClickMap: function(message) {
+            if (this.mapSize === 'small')
+                this.showBigMap();
+            else if (this.mapSize === 'big')
+                this.showSmallMap();
+        },
+
+        onReceive: function(message) {
+
+            if (message.type === 'new_rooms') {
+                _.each(message.data, function(room_data) {
+                    room_data.id = room_data.key;
+                    var newRoom = new Backbone.Model(room_data)
+                    this.game_map.add(newRoom, {merge: true});
+                }, this);
+                this.current_room_key = message.data[0].key;
+                this.mapView.centerKey = this.current_room_key;
+                this.mapView.selectedKey = this.current_room_key;
+                this.mapView.render();
+
+            } else if (message.type === 'rebuild') {
+                var game_map = new Backbone.Collection();
+                // Due to some odd bug, defining a model that uses key
+                // as idAttribute didn't seem to work here, so instead
+                // adding the key as the id manually.
+                for (var key in message.data.map) {
+                    var roomData = message.data.map[key];
+                    roomData.id = roomData.key;
+                    game_map.add(new Backbone.Model(roomData));
+                }
+                this.current_room_key = message.data.current_room_key;
+                this.game_map = game_map;
+                this.showBigMap();
+
+            } else  if (message.type === 'room') {
+                var messageModel = new Backbone.Model(message);
+                this.collection.add(messageModel);
+
+                if (!this.current_room_key) {
+
+                    this.current_room_key = message.data.key;
+
+                    var width = Backbone.$(document).width();
+                    if (width < 650) {
+                        this.showSmallMap();
+                    } else {
+                        this.showBigMap();
+                    }
+
+                } else {
+                    this.current_room_key = message.data.key;
+                    this.mapView.centerKey = this.current_room_key;
+                    this.mapView.selectedKey = this.current_room_key;
+                    this.mapView.render();
+                }
+
+            } else if (message.type === 'welcome') {
+                var messageModel = new Backbone.Model(message);
+                this.collection.add(messageModel);
+
+            } else {
+                _.each(message.data, function(line) {
+
+                    if (!line.length) { return true; }
+
+                    // If the line has nothing but
+                    if (/^[-=+*\s]+$/.exec(line)) {
+                        var messageModel = new Backbone.Model({
+                            type: 'casting',
+                            data: line,
+                            isCasting: true,
+                        });
+                    } else {
+                        var promptRe = new RegExp("[\\*o]\\s(R\\s)?(S\\s)?HP:\\w+\\s((S|D)P:\\w+\\s)?MV:\\w+\\s(-(\\s[-\\w]+)+:\\s\\w+\\s)*>.*");
+                        if (promptRe.exec(line)) {
+                            var messageModel = new Backbone.Model({
+                                type: 'prompt',
+                                data: line,
+                            });
+                        } else {
+                            var messageModel = new Backbone.Model({
+                                type: 'incoming',
+                                data: line,
+                            });
+                        }
+                    }
+
+                   this.collection.add(messageModel);
+                }, this);
+            }
+
+            //var messageModel = new Backbone.Model(message);
+            //this.collection.add(messageModel);
+
+        },
+
+        onSend: function(message) {
+            message.echo = true;
+            //message.data = message.data;
+            var messageModel = new Backbone.Model(message);
+            this.collection.add(messageModel);
+        },
+    });
+
+    var HelpView = Backbone.Marionette.ItemView.extend({
+        className: 'edit-quest details-box single-page wot-help',
+        template: HelpTemplate,
+    });
+
+    var ModalView = Backbone.Marionette.LayoutView.extend({
+        className: 'advent-modal-wrapper',
+        template: ModalTemplate,
+        regions: {
+            contentsRegion: '.modal-contents-region'
+        },
+        events: {
+            'click .modal-contents-region': 'onClickModalContentsRegion',
+            'click .close-icon': 'onClickClose',
+        },
+        ui: {
+            overlay: '.modal-overlay',
+        },
+        positionModal: function() {
+            var view = this.options.view,
+                windowHeight = Backbone.$(window).outerHeight(),
+                viewHeight = view.$el.outerHeight();
+            if (windowHeight > viewHeight) {
+                var margin = Math.floor((windowHeight - viewHeight) / 2);
+                view.$el.css('margin-top', margin + 'px');
+            } else {
+                view.$el.css('margin-top', '0');
+            }
+        },
+        onDestroy: function() {
+            Backbone.$('body').css('overflow', 'visible');
+        },
+        onShow: function() {
+            this.contentsRegion.show(this.options.view);
+            Backbone.$('body').css('overflow', 'hidden');
+        },
+        onClickClose: function(event) {
+            this.destroy();
+            event.stopPropagation();
+        },
+        onClickModalContentsRegion: function(event) {
+            if (this.options.closeOnContentClick
+                || event.target === this.contentsRegion.el) {
+                this.destroy();
+            }
+        },
+        onKeyPress: function(code) {
+            var closeKey = this.options.closeKey || 'escape';
+
+            if ( // 27 is escape
+                (closeKey === 'escape' && code === 27) ||
+                (closeKey === 'all')
+               ) {
+                this.destroy();
+            }
+        }
+    });
+
+    var UINotificationView = Backbone.Marionette.ItemView.extend({
+        className: function() {
+            var classNames = 'ui-notification';
+            if (this.model.attributes.notificationType) {
+                classNames = classNames + ' ' + this.model.attributes.notificationType;
+            }
+            return classNames;
+        },
+        template: UINotificationTemplate,
+        events: {
+            'click .close-button': 'onClickCloseButton'
+        },
+        initialize: function(options) {
+            this.autoHide = true;
+            if (options.autoHide !== undefined) {
+                this.autoHide = options.autoHide;
+            }
+        },
+        onClickCloseButton: function(event) {
+            this.remove();
+        },
+        onShow: function() {
+            if (this.autoHide) {
+                var self = this;
+                // Autoclose after 5 seconds
+                setTimeout(function() {
+                    self.remove();
+                }, 5000);
+            }
+        }
+    });
+
+
+    var RoomModel = Backbone.Model.extend({
+        idAttribute: "key",
+        // Mainly have these to be able to have succint room declarations
+        // in splash page map. Remove if it proves problematic.
+        defaults: {
+            z: 0,
+            type: 'road',
+        },
+        initialize: function(attrs, options) {
+            options = options || {};
+            var collection = options.collection || {};
+            this.zone = collection.zone || null;
+        },
+        neighbor: function(dir) {
+            // Caveat: this only works if the room came from a collection
+            var room = this;
+
+            var x = room.get('x');
+            var y = room.get('y');
+            var z = room.get('z');
+            if (dir == 'north') y += 1;
+            if (dir == 'east') x += 1;
+            if (dir == 'south') y -= 1;
+            if (dir == 'west') x -= 1;
+            if (dir == 'up') z += 1;
+            if (dir == 'down') z -= 1;
+
+            var neighbor = null;
+            if (room.collection) {
+                _.each(room.collection.models, function(_room){
+                    if (_room.attributes.x == x
+                        && _room.attributes.y == y
+                        && _room.attributes.z == z) {
+                        neighbor = {key: _room.attributes.key};
+                        return false;
+                    }
+                });
+            }
+            return neighbor;
+        }
+    });
+
+    var MapRoomsCollection = Backbone.Collection.extend({
+        model: RoomModel
+    });
+
+    var COLORS = {
+        white: '#EBEBEB',
+        gray: '#A2A2A2',
+        green: '#279084',
+        black: '#191A1C',
+        red: '#c13434',
+        primary: '#d77617',
+        purple: '#8934c1',
+        secondary: '#f5c983',
+        pink: '#f583e7'
+    };
+
+    var ROOMCOLORS = {
+        road: '#9497a1',
+        city: '#65686e',
+        indoor: '#a48d73',
+        field: '#8e9422',
+        mountain: '#7a5b3e',
+        water: '#4798c4',
+        forest: '#207f45',
+        desert: '#bf824d',
+    };
+
+    var MapView = Backbone.Marionette.ItemView.extend({
+        tagName: 'canvas',
+        template: false,
+        id: 'map',
+        initialize: function() {
+            // half a room's width, as well as the space between two rooms
+            this.unit = 8;
+
+            // Map and center are required
+            this.map = this.options.map;
+            this.centerKey = this.options.centerKey;
+
+            this.width = this.options.width || 270;
+            this.radius = this.options.radius || 5;
+
+            // optional
+            this.selectedKey = this.options.selectedKey;
+            if (this.options.clickable === undefined) {
+                this.clickable = true;
+            } else {
+                this.clickable = this.options.clickable;
+            }
+
+            // Set the canvas size
+            this.$el.attr('width', this.width);
+            this.$el.attr('height', this.width);
+            this.$el.css('width', this.width + 'px');
+            this.$el.css('height', this.width + 'px');
+
+            this.ctx = this.el.getContext('2d');
+        },
+        events: {
+            'click': 'onClick',
+        },
+        onShow: function() {
+        },
+        onRender: function() {
+            var start = new Date().getTime();
+
+            // Get the center model
+            if (this.centerKey) {
+                this.center = this.map.get(this.centerKey);
+                this.centerX = this.center.attributes.x;
+                this.centerY = this.center.attributes.y;
+                this.centerZ = this.center.attributes.z;
+            }
+
+            // Filter out elements of the map we're not showing
+            this.renderRooms = new MapRoomsCollection();
+            this.map.each(function(model) {
+                if (Math.abs(model.attributes.x - this.centerX) <= (this.radius + 1)
+                    && Math.abs(model.attributes.y - this.centerY) <= (this.radius + 1)
+                    && model.attributes.z === this.centerZ) {
+                    this.renderRooms.add(model);
+                }
+            }, this);
+
+            // Set canvas coordinates for each room
+            //this.renderRooms.each(function(model, index, collection) {
+            this.map.each(function(model, index, collection) {
+                // This says, start at half the width of the map, then account
+                // for half of an exit, and then do 3 units (2 half room widths
+                // + 1 half exit width).
+                model.attributes.cx = (
+                    this.width / 2
+                    - this.unit
+                    + 3 * this.unit * (model.attributes.x - this.centerX));
+                model.attributes.cy = (
+                    this.width / 2
+                    - this.unit
+                    + 3 * this.unit * (this.centerY - model.attributes.y));
+            }, this);
+
+            // Do the actual rendering
+            this.ctx.clearRect(0, 0, this.width, this.width);
+            this.renderRooms.each(function(model, index, collection) {
+                this.drawRoom(model);
+            }, this);
+
+        },
+
+        onClick: function(event) {
+            var self = this;
+            if (!this.clickable) { return; }
+
+            if (self.renderRooms.length == 0) {
+                return;
+            }
+
+            var x = event.offsetX;
+            var y = event.offsetY;
+
+            this.renderRooms.find(function(model, index, collection) {
+                if (model.attributes.cx <= x
+                    && x <= model.attributes.cx + 2 * this.unit) {
+                    if (model.attributes.cy <= y
+                        && y <= model.attributes.cy + 2 * this.unit) {
+                        //Channels.map.vent.trigger('room:click', model);
+                        return true;
+                    }
+                }
+            }, this);
+        },
+
+        drawRoom: function(room, room_only) {
+            /*
+                room_only assumed to be false. Option is mainly included so
+                we have the option to do a rooms only second pass of rendering,
+                which would fix the issue of trying to draw the connection of
+                a river going over a brige level with the ground. The map ends
+                up drawing the connection 'above' the level room, and the
+                solution is to do a second pass with rooms only to make sure
+                we draw over all that, since we never want anything drawn
+                over a room.
+            */
+
+            if (room_only === undefined) room_only = false;
+
+            var roomColor = ROOMCOLORS[room.attributes.type];
+
+            var x = room.attributes.cx,
+                y = room.attributes.cy,
+                w = this.unit * 2,
+                isSelected = (room.attributes.key === this.selectedKey) ? true : false;
+
+            this.ctx.fillStyle = roomColor;
+            if (!isSelected) {
+                this.ctx.fillRect(room.attributes.cx, room.attributes.cy, w, w);
+
+                if (room.attributes.flags && room.attributes.flags.length) {
+                    this.drawRoomTab(x, y, room.attributes.flags, false);
+                }
+
+
+            } else {
+                this.ctx.fillRect(
+                    room.attributes.cx - 1,
+                    room.attributes.cy - 1,
+                    w + 2, w + 2);
+
+                if (room.attributes.flags && room.attributes.flags.length) {
+                    this.drawRoomTab(x, y, room.attributes.flags, true);
+                }
+
+                this.ctx.fillStyle = COLORS.black;
+                this.ctx.fillRect(
+                    room.attributes.cx + 2,
+                    room.attributes.cy + 2,
+                    w - 4, w - 4);
+            }
+
+            if (room_only) {return;}
+
+            // NESW connections
+            _.each(['north', 'east', 'south', 'west'], function(direction) {
+                this.drawConnection(room, direction);
+            }, this);
+
+            // U / D connections
+            if (room.attributes.up && room.attributes.down) {
+                this.drawTriangle(x + 8, y + 5, {selected: true});
+                this.drawTriangle(x + 8, y + 11, {down: true, selected: true});
+            } else if (room.attributes.up) {
+                this.drawTriangle(x + 8, y + 8, {selected: isSelected});
+            } else if (room.attributes.down) {
+                this.drawTriangle(x + 8, y + 8, {selected: isSelected, down: true});
+            }
+
+        },
+
+        drawRoomTab: function(x, y, flags, selected) {
+            selected = selected ? 1 : 0;
+
+            // Draw a room tab if necessary
+            var color;
+            for (var i = 0; i <= flags.length; i++) {
+                var flag = flags[i];
+                if (flag === 'fountain') {
+                    color = ROOMCOLORS.water;
+                    break;
+                } else if (flag === 'smob') {
+                    color = COLORS.red;
+                    break;
+                } else if (flag === 'trainer') {
+                    color = COLORS.white;
+                    break;
+                } else if (flag === 'exp') {
+                    color = COLORS.primary;
+                    break;
+                } else if (flag === 'horse') {
+                    color = ROOMCOLORS.field;
+                    break;
+                } else if (flag === 'shop') {
+                    color = COLORS.green;
+                    break;
+                } else if (flag === 'inn') {
+                    color = COLORS.purple;
+                    break;
+                } else if (flag === 'herb') {
+                    color = COLORS.secondary;
+                    break;
+                } else if (flag === 'action') {
+                    color = COLORS.pink;
+                    break;
+                }
+            }
+
+            if (color) {
+                this.ctx.beginPath();
+                this.ctx.fillStyle = COLORS.black;
+                this.ctx.moveTo(x - 3 - selected + this.unit, y - selected);
+                this.ctx.lineTo(x + this.unit * 2 + selected, y - selected);
+                this.ctx.lineTo(x + this.unit * 2 + selected, y + this.unit + 3 - selected);
+                this.ctx.fill();
+
+                this.ctx.beginPath();
+                this.ctx.fillStyle = color;
+                this.ctx.moveTo(x - 2.5 - selected + this.unit, y - selected);
+                this.ctx.lineTo(x + this.unit * 2 + selected, y - selected);
+                this.ctx.lineTo(x + this.unit * 2 + selected, y + this.unit + 2.5 - selected);
+                this.ctx.fill();
+            }
+        },
+
+        drawTriangle: function(x, y, options) {
+            var options = options || {},
+                color = options.selected ? COLORS.white : COLORS.black,
+                size = options.size || 2;
+
+            this.ctx.beginPath();
+            this.ctx.fillStyle = color;
+            if (options.down) {
+                this.ctx.moveTo(x - 2 * size, y - size);
+                this.ctx.lineTo(x + 2 * size, y - size);
+                this.ctx.lineTo(x, y + size);
+            } else {
+                this.ctx.moveTo(x - 2 * size, y + size);
+                this.ctx.lineTo(x + 2 * size, y + size);
+                this.ctx.lineTo(x, y - size);
+            }
+            this.ctx.fill();
+        },
+        drawConnection: function(room, dir) {
+            var revDir = INVERSE_DIRECTIONS[dir];
+            var exitRoomAttrs = room.get(dir);
+            if (!exitRoomAttrs) return;
+
+            var fromCoords = this.getExitCoord(room, dir);
+
+            var exitRoom = this.map.get(exitRoomAttrs.key);
+            if (exitRoom && exitRoom.get('z') === room.get('z')) {
+                // exit room is in the map, and on the same z-axis
+
+                var toCoords = this.getExitCoord(exitRoom, revDir);
+
+                // Look for the particular case where the exit room is either
+                // up or down
+                if (exitRoom.attributes.z != room.attributes.z) {
+                    this.drawSlope(toCoords, dir, exitRoom.attributes.z - room.attributes.z);
+                }
+
+            } else { // exit room not in the map
+                var toCoords = [fromCoords[0], fromCoords[1]];
+                if (dir === 'south') {
+                    toCoords[1] += this.unit;
+                } else if (dir === 'north') {
+                    toCoords[1] -= this.unit;
+                } else if (dir === 'east') {
+                    toCoords[0] += this.unit;
+                } else if (dir === 'west') {
+                    toCoords[0] -= this.unit;
+                } else {
+                    return;
+                }
+            }
+
+            // Room going under another room, we shorten the connection by
+            // half.
+            if (exitRoom && exitRoom.get('z') !== room.get('z')) {
+                if (dir === 'south') {
+                    toCoords[1] -= this.unit / 2;
+                } else if (dir === 'north') {
+                    toCoords[1] += this.unit / 2;
+                } else if (dir === 'east') {
+                    toCoords[0] -= this.unit / 2;
+                } else if (dir === 'west') {
+                    toCoords[0] += this.unit / 2;
+                }
+            }
+
+            this.ctx.strokeStyle = COLORS.white;
+            this.ctx.beginPath();
+            this.ctx.moveTo(fromCoords[0], fromCoords[1]);
+            this.ctx.lineTo(toCoords[0], toCoords[1]);
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+            if (exitRoom) {
+                // get the room attrs at the exit of the reverse of the exit room
+                var revRoomAttrs = exitRoom.get(revDir);
+                if (!revRoomAttrs || revRoomAttrs.key != room.attributes.key) {
+                    this.drawOneWay(toCoords, dir);
+                }
+            }
+        },
+        drawOneWay: function(toCoords, dir) {
+            var x = toCoords[0],
+                y = toCoords[1];
+            this.ctx.beginPath();
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = COLORS.white;
+            this.ctx.moveTo(x, y);
+            if (dir === 'east') {
+                this.ctx.lineTo(x - 4, y - 4);
+            } else if (dir === 'west') {
+                this.ctx.lineTo(x + 4, y - 4);
+            } else if (dir === 'north') {
+                this.ctx.lineTo(x - 4, y + 4);
+            } else if (dir === 'south') {
+                this.ctx.lineTo(x - 4, y - 4);
+            }
+            this.ctx.moveTo(x, y);
+            if (dir === 'east') {
+                this.ctx.lineTo(x - 4, y + 4);
+            } else if (dir === 'west') {
+                this.ctx.lineTo(x + 4, y + 4);
+            } else if (dir === 'north') {
+                this.ctx.lineTo(x + 4, y + 4);
+            } else if (dir === 'south') {
+                this.ctx.lineTo(x + 4, y - 4);
+            }
+            this.ctx.stroke()
+        },
+        getExitCoord: function(room, dir) {
+            var x = room.attributes.cx,
+                y = room.attributes.cy;
+            // Return coordinates of the exit point
+            if (dir == 'north' || dir == 'south') {
+                x += this.unit;
+            }
+            if (dir == 'east' || dir == 'west') {
+                y += this.unit;
+            }
+            if (dir == 'east') {
+                x += this.unit * 2;
+            }
+            if (dir == 'south') {
+                y += this.unit * 2;
+            }
+            return [x, y];
+        },
+        drawSlope: function(toCoords, dir, slope) {
+            // Not doing this right now
+            return;
+
+            var isDown = (slope < 0) ? true : false;
+            isDown = true;
+
+            if (dir === 'south') {
+                var yOffset = isDown ? 11 : 5;
+
+                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.lineWidth = 2;
+                this.ctx.moveTo(toCoords[0], toCoords[1]);
+                this.ctx.lineTo(toCoords[0], toCoords[1] + yOffset);
+                this.ctx.stroke();
+
+                this.drawTriangle(toCoords[0], toCoords[1] + yOffset, {
+                    selected: true,
+                    size: 4,
+                    down: isDown,
+                });
+            } else if (dir == 'east') {
+                var yOffset = isDown ? -3 : 3;
+
+                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.lineWidth = 2;
+                this.ctx.moveTo(toCoords[0], toCoords[1]);
+                this.ctx.lineTo(toCoords[0] + 8, toCoords[1]);
+                this.ctx.stroke();
+
+                this.drawTriangle(toCoords[0] + 8, toCoords[1] - yOffset, {
+                    selected: true,
+                    size: 4,
+                    down: isDown,
+                });
+            } else if (dir == 'west') {
+                var yOffset = isDown ? -3 : 3;
+
+                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.lineWidth = 2;
+                this.ctx.moveTo(toCoords[0], toCoords[1]);
+                this.ctx.lineTo(toCoords[0] - 8, toCoords[1]);
+                this.ctx.stroke();
+
+                this.drawTriangle(toCoords[0] - 8, toCoords[1] - yOffset, {
+                    selected: true,
+                    size: 4,
+                    down: isDown,
+                });
+            } else if (dir == 'north') {
+                var yOffset = isDown ? 5 : 11;
+
+                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.lineWidth = 2;
+                this.ctx.moveTo(toCoords[0], toCoords[1]);
+                this.ctx.lineTo(toCoords[0], toCoords[1] - yOffset);
+                this.ctx.stroke();
+
+                this.drawTriangle(toCoords[0], toCoords[1] - yOffset, {
+                    selected: true,
+                    size: 4,
+                    down: isDown,
+                });
+            }
+        }
+    });
+
+    /* ========================== */
+
+    var MainView = Backbone.Marionette.LayoutView.extend({
+        className: 'wot-client',
+        template: IndexTemplate,
+        regions: {
+            modalRegion: '#wot-modal',
+            notificationRegion: '#notification-box',
+            timerRegion: '#timer-region',
+            headerRegion: '.header-region',
+            mainRegion: '.main-region',
+            scrollToolRegion: '.scroll-tool-region',
+        },
+
+        onActiveScroll: function() {
+            if (!this.scrollToolRegion.hasView()) {
+                this.scrollToolRegion.show(new ScrollToolView({}));
+            }
+        },
+        onResetScroll: function() {
+            this.scrollToolRegion.empty();
+        },
+        onClickNewMessages: function() {
+            Channel.vent.trigger('scroll:bottom');
+            this.scrollToolRegion.empty();
+        },
+
+        events: {
+            'click .help-icon': 'onClickHelpIcon',
+            'click .new-messages': 'onClickNewMessages',
+        },
+        onClickHelpIcon: function() {
+            Channel.vent.trigger('help');
+        },
+        onShow: function() {
+            this.logging_in = false;
+
+            this.listenTo(Channel.vent, 'login', this.onLogin);
+
+            this.listenTo(Channel.vent, 'send', this.onSend);
+            this.listenTo(Channel.vent, 'receive', this.onReceive);
+            this.listenTo(Channel.vent, 'cmd', this.onCmd);
+            this.listenTo(Channel.vent, 'notify', this.onNotify);
+            this.listenTo(Channel.vent, 'notify:error', this.onNotifyError);
+            this.listenTo(Channel.vent, 'help', this.onHelp);
+
+            this.mainRegion.show(new LoginView());
+
+           // If a console user starts to scroll, the console will emit this
+            this.listenTo(Channel.vent, 'scroll:active', this.onActiveScroll);
+            this.listenTo(Channel.vent, 'scroll:reset', this.onResetScroll);
+
+            // Debugging tool to speed up testing.
+            if (EMULATE) {
+                Channel.vent.trigger('login', EMULATE);
+            }
+        },
+        onHelp: function(message) {
+            var modalView = new ModalView({
+                view: new HelpView()
+            })
+            this.modalRegion.show(modalView);
+        },
+        connect: function(message) {
+            this.timerRegion.empty();
+
+            var game_map = new Backbone.Collection();
+            // Due to some odd bug, defining a model that uses key
+            // as idAttribute didn't seem to work here, so instead
+            // adding the key as the id manually.
+            for (var key in message.data.map) {
+                var roomData = message.data.map[key];
+                roomData.id = roomData.key;
+                game_map.add(new Backbone.Model(roomData));
+            }
+
+            this.mainRegion.show(new GameView({
+                game_map: game_map
+            }));
+
+            Channel.vent.trigger('notify', 'Connected');
+        },
+        disconnect: function(message) {
+            this.mainRegion.show(new LoginView());
+            Channel.vent.trigger('notify', 'Connection closed.');
+            this.timerRegion.show(new TimerView());
+        },
+        onLogin: function(data) {
+            /*
+                Send a login request to the websocket.
+            */
+
+            if (this.logging_in) {
+                console.log('interrupting login');
+                return;
+            } else {
+                this.logging_in = true;
+            }
+
+            this.websocket = new WebSocket(Config.wotWsServer);
+            this.websocket.onopen = function(event) {
+                Channel.vent.trigger('notify', 'Logging in...');
+                Channel.vent.trigger('send', {
+                    'type': 'login',
+                    'data': {
+                        'charname': data.charname,
+                        'password': data.password,
+                    },
+                });
+            };
+            this.websocket.onmessage = function(event) {
+                var data = Backbone.$.parseJSON(event.data);
+                Channel.vent.trigger('receive', data);
+            },
+
+            this.websocket.onerror = function(event) {
+                Channel.vent.trigger(
+                    'notify:error',
+                    'No websocket connection available.');
+            }
+        },
+        onCmd: function(cmd) {
+            Channel.vent.trigger('send', {type: 'cmd', data: cmd});
+            // this.onSend({
+            //     type: 'cmd',
+            //     data: cmd,
+            // });
+        },
+        onSend: function(message) {
+            if (!this.websocket) {
+                return;
+            }
+            console.log("Sending: ");
+            console.log(message);
+            Channel.vent.trigger('scroll:bottom');
+            this.websocket.send(JSON.stringify(message));
+        },
+        onReceive: function(message) {
+            console.log("Received: ");
+            console.log(message);
+
+            if (message.type === 'connected') {
+                this.connect(message);
+            } else if (message.type === 'disconnected') {
+                this.disconnect();
+                this.logging_in = false;
+            } else if (message.type === 'login-error') {
+                this.onNotifyError(message.data);
+                this.logging_in = false;
+            }
+        },
+
+        onNotify: function(message, notificationType) {
+            this.notificationRegion.show(new UINotificationView({
+                model: new Backbone.Model({
+                    message: message,
+                    notificationType: notificationType
+                }),
+                autoHide: true
+            }));
+        },
+        onNotifyError: function(message) {
+            Channel.vent.trigger('notify', message, 'error');
+        },
+
+    });
+
+    /* CONTROLLER */
+
+    var Controller = Backbone.Marionette.Controller.extend({
+        start: function() {
+            this.websocket = null;
+            app.mainRegion.show(new MainView());
+        },
+
+
+
+    });
+
+    /* INIT */
+
+    var app = new Backbone.Marionette.Application();
+    app.addRegions({mainRegion: '#main'});
+
+    // Use mustache-like templating
+    _.templateSettings = {
+        interpolate: /\{\{(.+?)\}\}/g
+    };
+
+    // Start controllers
+    app.on('start', function(){
+        console.log('WOT app started');
+        var self = this;
+
+        var controller = new Controller();
+        controller.start()
+
+    });
+
+    app.start();
+
+});
+
