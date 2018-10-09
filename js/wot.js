@@ -53,7 +53,7 @@ var EMULATE = {
     charname: 'somechar',
     password: 'somepass'
 };
-EMULATE = false;
+//EMULATE = false;
 
 define(function(require) {
     "use strict";
@@ -64,6 +64,7 @@ define(function(require) {
         Radio = require('backbone.radio'),
         Marionette = require('marionette'),
         Config = require('config'),
+        data = require('data'),
 
         GameView = require('game'),
 
@@ -79,9 +80,9 @@ define(function(require) {
 
     /* VIEWS */
 
-    var TimerView = Backbone.Marionette.View.extend({
+    var TimerView = Marionette.View.extend({
         className: 'timer-view',
-        template: false,
+        template: _.template(''),
         initialize: function() {
             this.tstart = new Date();
         },
@@ -107,7 +108,7 @@ define(function(require) {
         }
     });
 
-    var LoginView = Backbone.Marionette.View.extend({
+    var LoginView =  Marionette.View.extend({
         className: 'login-view single-form',
         template: LoginTemplate,
         ui: {
@@ -169,12 +170,12 @@ define(function(require) {
         },
     });
 
-    var HelpView = Backbone.Marionette.View.extend({
+    var HelpView = Marionette.View.extend({
         className: 'edit-quest details-box single-page wot-help',
         template: HelpTemplate,
     });
 
-    var ModalView = Backbone.Marionette.View.extend({
+    var ModalView = Marionette.View.extend({
         className: 'advent-modal-wrapper',
         template: ModalTemplate,
         regions: {
@@ -205,6 +206,12 @@ define(function(require) {
             this.showChildView('contentsRegion', this.options.view);
             //this.contentsRegion.show(this.options.view);
             Backbone.$('body').css('overflow', 'hidden');
+
+            var self = this;
+            this.listenTo(Backbone.$(document).keydown(function(e){
+                self.onKeyPress(e.which);
+            }));
+
         },
         onClickClose: function(event) {
             this.destroy();
@@ -212,7 +219,7 @@ define(function(require) {
         },
         onClickModalContentsRegion: function(event) {
             if (this.options.closeOnContentClick
-                || event.target === this.contentsRegion.el) {
+                || event.target === this.getRegion('contentsRegion').el) {
                 this.destroy();
             }
         },
@@ -228,7 +235,7 @@ define(function(require) {
         }
     });
 
-    var UINotificationView = Backbone.Marionette.View.extend({
+    var UINotificationView = Marionette.View.extend({
         className: function() {
             var classNames = 'ui-notification';
             if (this.model.attributes.notificationType) {
@@ -260,10 +267,29 @@ define(function(require) {
         }
     });
 
+    // Scroll tool view
+    //var ScrollToolView = Backbone.Marionette.ItemView.extend({
+    var ScrollToolView = Marionette.View.extend({
+        className: 'scroll-tool-view',
+        template: _.template(''),
+        initialize: function() {
+            this.label = "JUMP TO BOTTOM";
+            this.count = 0;
+            this.listenTo(Channel, 'receive', function() {
+                this.count += 1;
+                this.label = "NEW MESSAGES (" + this.count + ")";
+                this.render();
+            }, this);
+        },
+        onRender: function() {
+            this.$el.html("<div class='new-messages'>" + this.label + "</div>");
+        },
+    });
+
 
     /* ========================== */
 
-    var MainView = Backbone.Marionette.View.extend({
+    var MainView = Marionette.View.extend({
         className: 'wot-client',
         template: IndexTemplate,
         regions: {
@@ -441,7 +467,7 @@ define(function(require) {
 
     /* INIT */
 
-    var app = new Backbone.Marionette.Application({
+    var app = new Marionette.Application({
         region: '#main'
     });
 
@@ -453,6 +479,7 @@ define(function(require) {
     // Start controllers
     app.on('start', function(){
         console.log('WOT app started');
+        data.launched = true;
         app.getRegion().show(new MainView());
     });
 

@@ -7,6 +7,7 @@ define(function(require) {
         Radio = require('backbone.radio'),
         Marionette = require('marionette'),
         Config = require('config'),
+        data = require('data'),
 
         color_lines = require('utils/color_lines'),
 
@@ -40,7 +41,7 @@ define(function(require) {
 
 
     //var InputView = Backbone.Marionette.ItemView.extend({
-    var InputView = Backbone.Marionette.View.extend({
+    var InputView = Marionette.View.extend({
         /*
 
         Magic input box. Has two implementations of a repeat-command pattern,
@@ -55,7 +56,8 @@ define(function(require) {
         },
         events: {
             'submit form': 'onSubmit',
-            'keyup input': 'onKeyUp',
+            //'keyup input': 'onKeyUp',
+            'keydown @ui.input': 'onKeyDown',
         },
         initialize: function() {
             this.commandHistory = [];
@@ -63,7 +65,7 @@ define(function(require) {
             this.originalInput = null;
             this.listenTo(Channel, 'input:focus', this.onFocus);
         },
-        onRender: function() {
+        onAttach: function() {
             this.onFocus();
         },
         onFocus: function() {
@@ -98,10 +100,83 @@ define(function(require) {
             this.ui.input.val('')
             return false;
         },
-        onKeyUp: function(event) {
+
+        // Special keys
+        onTab: function(event) {
+
+            // Get the input
+            var input = this.ui.input.val();
+            if (!input || !data.currentRoom) return;
+
+            event.preventDefault();
+
+            var tokens = input.split(/\s+/),
+                lastToken = tokens[tokens.length - 1].toLowerCase();
+
+            if (tokens.length === 1) return;
+
+            console.log('lastToken: ' + lastToken)
+
+            var excludeWords = [
+                'a', 'the', 'an', 'of', 'for', 'on', 'is', 'here', 'with',
+            ];
+            var mobs = data.currentRoom.mobs,
+                items = data.currentRoom.items,
+                things = mobs.concat(items);
+
+            var replacement;
+            _.find(things, function(line) {
+                return _.find(line.split(/[\s,\.]+/), function(word) {
+                    if (!word) return true;
+
+                    word = word.toLowerCase()
+                    if (!excludeWords.includes(word)) {
+                        //keyword = word;
+                        if (word.match(lastToken)) {
+                            replacement = word;
+                            return true;
+                        }
+                    }
+                });
+
+            });
+
+            if (replacement) {
+                tokens.splice(tokens.length - 1, 1, replacement);
+                this.ui.input.val(tokens.join(' '));
+            }
+
+        },
+
+        onKeyDown: function(event) {
             var upArrow = 38,
                 downArrow = 40,
+                rightArrow = 39,
+                leftArrow = 37,
                 input = this.ui.input.val();
+
+            if (event.which === 9) {
+                this.onTab(event);
+                return;
+            }
+
+            if (event.metaKey) {
+                var cmd = null;
+                if (event.which == upArrow) {
+                    cmd = 'n';
+                } else if (event.which == downArrow) {
+                    cmd = 's';
+                } else if (event.which == leftArrow) {
+                    cmd = 'w';
+                } else if (event.which == rightArrow) {
+                    cmd = 'e';
+                }
+                if (cmd) {
+                    Channel.trigger('cmd', cmd);
+                    event.preventDefault();
+                }
+                return;
+            }
 
             if (event.which == upArrow) {
                 if (input && this.commandHistory.length == 0) {
@@ -140,11 +215,13 @@ define(function(require) {
 
                 this.historyIndex = nextIndex
             }
-        }
+        },
+
+
     });
 
     //var DefaultMessageView = Backbone.Marionette.ItemView.extend({
-    var DefaultMessageView = Backbone.Marionette.View.extend({
+    var DefaultMessageView = Marionette.View.extend({
         template: DefaultMessageTemplate,
         className: function() {
             var className = 'message';
@@ -167,7 +244,7 @@ define(function(require) {
     });
 
     //var CastingView = Backbone.Marionette.ItemView.extend({
-    var CastingView = Backbone.Marionette.View.extend({
+    var CastingView = Marionette.View.extend({
         template: false,
         className: 'message casting',
         initialize: function() {
@@ -190,7 +267,7 @@ define(function(require) {
     });
 
     //var RoomMessageView = Backbone.Marionette.ItemView.extend({
-    var RoomMessageView = Backbone.Marionette.View.extend({
+    var RoomMessageView = Marionette.View.extend({
         className: 'message room-view',
         template: RoomMessageTemplate,
         templateContext: function() {
@@ -208,7 +285,7 @@ define(function(require) {
     });
 
     //var WelcomeView = Backbone.Marionette.ItemView.extend({
-    var WelcomeView = Backbone.Marionette.View.extend({
+    var WelcomeView = Marionette.View.extend({
         template: false,
         onRender: function() {
             var pre = Backbone.$('<pre/>');
@@ -217,11 +294,12 @@ define(function(require) {
         }
     });
 
-    var ConsoleView = Backbone.Marionette.CollectionView.extend({
+    var ConsoleView = Marionette.CollectionView.extend({
         className: 'console',
         bufferSize: 3000,
         events: {
-            'scroll': 'onScroll',
+            'scroll': _.throttle(function() {return this.onScroll();}, 250),
+            //'scroll': 'onScroll',
         },
 
         childView: function(message) {
@@ -280,63 +358,43 @@ define(function(require) {
             }
             return DefaultMessageView;
         },
-        onBeforeAddChild: function(childView) {
+        onBeforeAddChild: function(collectionView, childView) {
             var distanceToBottom = this.getDistanceToBottom();
             this.wasScrolledDown = (distanceToBottom === 0) ? true : false;
         },
-        onAddChild: function(childView) {
+        onRenderChildren: function() {
             // See if there the collection needs to be culled
             var delta = this.collection.length - this.bufferSize;
             if (delta > 0) {
                 this.collection.remove(this.collection.slice(0, delta));
             }
-
-            var element = this.$el[0];
-            if (this.wasScrolledDown) {
-                element.scrollTop = element.scrollHeight;
-            }
-
+            // Scroll down if needed
+            if (this.wasScrolledDown) this.scrollToBottom();
         },
 
         attachHtml: function(collectionView, childView, index) {
 
-            if (this.isCasting) {
+            console.log('attachHtml');
 
-                if (childView.model.attributes.isCasting) {
-                    Channel.trigger('cast:add', childView.model.attributes.data);
-                    return;
-                } else {
-                    this.isCasting = false;
-                    Channel.trigger('cast:stop');
+            if (childView.model) {
+                if (this.isCasting) {
+
+                    if (childView.model.attributes.isCasting) {
+                        Channel.trigger('cast:add', childView.model.attributes.data);
+                        return;
+                    } else {
+                        this.isCasting = false;
+                        Channel.trigger('cast:stop');
+                    }
+                } else if (childView.model.attributes.isCasting) {
+                    this.isCasting = true;
                 }
-            } else if (childView.model.attributes.isCasting) {
-                this.isCasting = true;
             }
 
-            Backbone.Marionette.CollectionView.prototype.attachHtml.apply(
+            Marionette.CollectionView.prototype.attachHtml.apply(
                 this, arguments);
         },
     });
-
-    // Scroll tool view
-    //var ScrollToolView = Backbone.Marionette.ItemView.extend({
-    var ScrollToolView = Backbone.Marionette.View.extend({
-        className: 'scroll-tool-view',
-        template: false,
-        initialize: function() {
-            this.label = "JUMP TO BOTTOM";
-            this.count = 0;
-            this.listenTo(Channel, 'receive', function() {
-                this.count += 1;
-                this.label = "NEW MESSAGES (" + this.count + ")";
-                this.render();
-            }, this);
-        },
-        onRender: function() {
-            this.$el.html("<div class='new-messages'>" + this.label + "</div>");
-        },
-    });
-
 
     var RoomModel = Backbone.Model.extend({
         idAttribute: "key",
@@ -408,9 +466,9 @@ define(function(require) {
     };
 
     //var MapView = Backbone.Marionette.ItemView.extend({
-    var MapView = Backbone.Marionette.View.extend({
+    var MapView = Marionette.View.extend({
         tagName: 'canvas',
-        template: false,
+        template: _.template(''),
         id: 'map',
         initialize: function() {
             // half a room's width, as well as the space between two rooms
@@ -825,7 +883,7 @@ define(function(require) {
     });
 
     //var GameView = Backbone.Marionette.LayoutView.extend({
-    var GameView = Backbone.Marionette.View.extend({
+    var GameView = Marionette.View.extend({
         /*
             Game view displayed after a successful login
         */
@@ -854,8 +912,6 @@ define(function(require) {
             this.listenTo(Channel, 'send', this.onSend);
         },
         onRender: function() {
-            console.log('rendering')
-
             //this.consoleRegion.show(new ConsoleView({
             this.showChildView('consoleRegion', new ConsoleView({
                 collection: this.collection,
@@ -946,6 +1002,8 @@ define(function(require) {
                     this.mapView.selectedKey = this.current_room_key;
                     this.mapView.render();
                 }
+
+                data.currentRoom = message.data;
 
             } else if (message.type === 'welcome') {
                 var messageModel = new Backbone.Model(message);
