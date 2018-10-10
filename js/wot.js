@@ -64,6 +64,7 @@ define(function(require) {
         Radio = require('backbone.radio'),
         Marionette = require('marionette'),
         Config = require('config'),
+        data = require('data'),
 
         GameView = require('game'),
 
@@ -77,15 +78,20 @@ define(function(require) {
 
         Channel = Radio.channel('wot');
 
+    // Use mustache-like templating
+    _.templateSettings = {
+        interpolate: /\{\{(.+?)\}\}/g
+    };
+
     /* VIEWS */
 
-    var TimerView = Backbone.Marionette.View.extend({
+    var TimerView = Marionette.View.extend({
         className: 'timer-view',
-        template: false,
+        template: _.template('{{ minutes }}:{{ seconds }}'),
         initialize: function() {
             this.tstart = new Date();
         },
-        onRender: function() {
+        onnRender: function() {
             var seconds_since = Math.ceil((new Date() - this.tstart) / 1000);
 
             var minutes = Math.floor(seconds_since / 60);
@@ -96,7 +102,22 @@ define(function(require) {
             }
 
             this.$el.html(minutes + ':' + seconds);
+        },
+        templateContext: function() {
+            var seconds_since = Math.ceil((new Date() - this.tstart) / 1000);
 
+            var minutes = Math.floor(seconds_since / 60);
+            var seconds = seconds_since - minutes * 60;
+
+            if (seconds < 10) {
+                seconds = '0' + seconds;
+            }
+            return {
+                seconds: seconds,
+                minutes: minutes,
+            }
+        },
+        onAttach: function() {
             var self = this;
             this.intervalId = setInterval(function() {
                 self.render();
@@ -107,7 +128,7 @@ define(function(require) {
         }
     });
 
-    var LoginView = Backbone.Marionette.View.extend({
+    var LoginView = Marionette.View.extend({
         className: 'login-view single-form',
         template: LoginTemplate,
         ui: {
@@ -123,7 +144,7 @@ define(function(require) {
                 }
             },
         },
-        onRender: function() {
+        onAttach: function() {
             this.ui.username.focus();
         },
         onClickSubmit: function() {
@@ -169,12 +190,12 @@ define(function(require) {
         },
     });
 
-    var HelpView = Backbone.Marionette.View.extend({
+    var HelpView = Marionette.View.extend({
         className: 'edit-quest details-box single-page wot-help',
         template: HelpTemplate,
     });
 
-    var ModalView = Backbone.Marionette.View.extend({
+    var ModalView = Marionette.View.extend({
         className: 'advent-modal-wrapper',
         template: ModalTemplate,
         regions: {
@@ -205,6 +226,11 @@ define(function(require) {
             this.showChildView('contentsRegion', this.options.view);
             //this.contentsRegion.show(this.options.view);
             Backbone.$('body').css('overflow', 'hidden');
+
+            var self = this;
+            this.listenTo(Backbone.$(document).keydown(function(e){
+                self.onKeyPress(e.which);
+            }));
         },
         onClickClose: function(event) {
             this.destroy();
@@ -212,11 +238,12 @@ define(function(require) {
         },
         onClickModalContentsRegion: function(event) {
             if (this.options.closeOnContentClick
-                || event.target === this.contentsRegion.el) {
+                || event.target === this.getRegion('contentsRegion').el) {
                 this.destroy();
             }
         },
         onKeyPress: function(code) {
+            console.log('.')
             var closeKey = this.options.closeKey || 'escape';
 
             if ( // 27 is escape
@@ -228,7 +255,7 @@ define(function(require) {
         }
     });
 
-    var UINotificationView = Backbone.Marionette.View.extend({
+    var UINotificationView = Marionette.View.extend({
         className: function() {
             var classNames = 'ui-notification';
             if (this.model.attributes.notificationType) {
@@ -260,10 +287,29 @@ define(function(require) {
         }
     });
 
+    // Scroll tool view
+    //var ScrollToolView = Marionette.ItemView.extend({
+    var ScrollToolView = Marionette.View.extend({
+        className: 'scroll-tool-view',
+        template: false,
+        initialize: function() {
+            this.label = "JUMP TO BOTTOM";
+            this.count = 0;
+            this.listenTo(Channel, 'receive', function() {
+                this.count += 1;
+                this.label = "NEW MESSAGES (" + this.count + ")";
+                this.render();
+            }, this);
+        },
+        onRender: function() {
+            this.$el.html("<div class='new-messages'>" + this.label + "</div>");
+        },
+    });
+
 
     /* ========================== */
 
-    var MainView = Backbone.Marionette.View.extend({
+    var MainView = Marionette.View.extend({
         className: 'wot-client',
         template: IndexTemplate,
         regions: {
@@ -441,7 +487,7 @@ define(function(require) {
 
     /* INIT */
 
-    var app = new Backbone.Marionette.Application({
+    var app = new Marionette.Application({
         region: '#main'
     });
 
@@ -453,6 +499,7 @@ define(function(require) {
     // Start controllers
     app.on('start', function(){
         console.log('WOT app started');
+        data.launched = true;
         app.getRegion().show(new MainView());
     });
 
