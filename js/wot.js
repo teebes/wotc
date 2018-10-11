@@ -66,12 +66,13 @@ define(function(require) {
         Config = require('config'),
         data = require('data'),
 
-        GameView = require('game'),
+        GameView = require('game/index'),
+        LoginView = require('login'),
+        ModalView = require('modal'),
 
         color_lines = require('utils/color_lines'),
 
         IndexTemplate = require('hbs!templates/wot/index'),
-        LoginTemplate = require('hbs!templates/wot/login'),
         HelpTemplate = require('hbs!templates/wot/help'),
         ModalTemplate = require('hbs!templates/wot/modal'),
         UINotificationTemplate = require('hbs!templates/wot/ui_notification_message'),
@@ -128,131 +129,9 @@ define(function(require) {
         }
     });
 
-    var LoginView = Marionette.View.extend({
-        className: 'login-view single-form',
-        template: LoginTemplate,
-        ui: {
-            submitButton: 'button[type=submit]',
-            username: 'input[name=charname]',
-        },
-        events: {
-            'click @ui.submitButton': 'onClickSubmit',
-            'keypress': function (event) {
-                if (event.which === 13) {
-                    event.preventDefault();
-                    this.onClickSubmit();
-                }
-            },
-        },
-        onAttach: function() {
-            this.ui.username.focus();
-        },
-        onClickSubmit: function() {
-            var data = this.getFormData();
-            if (data) {
-                // clear required fields
-                this.$('.form-control').removeClass('has-error');
-                Channel.trigger('login', data);
-            }
-            return false;
-        },
-        getFormData: function() {
-            /*
-                For each .form-control form field, take the 'name' attribute
-                for the key and get the value from jquery.val
-
-                Returns data if all the data is available, null if there
-                was an error.
-            */
-            var data = {},
-                missingFields = [];
-
-            this.$('.form-control').each(function(index, formControl) {
-                var $formControl = Backbone.$(formControl),
-                    name = $formControl.attr('name'),
-                    value = $formControl.val();
-
-                if ($formControl.attr('required') === 'required' && value === '') {
-                    $formControl.addClass('has-error');
-                    missingFields.push(name);
-                }
-
-                if ($formControl.attr('type') === 'checkbox') {
-                    value = $formControl.is(':checked');
-                }
-
-                data[$formControl.attr('name')] = value;
-            });
-
-            if (missingFields.length) return null;
-
-            return data;
-        },
-    });
-
     var HelpView = Marionette.View.extend({
         className: 'edit-quest details-box single-page wot-help',
         template: HelpTemplate,
-    });
-
-    var ModalView = Marionette.View.extend({
-        className: 'advent-modal-wrapper',
-        template: ModalTemplate,
-        regions: {
-            contentsRegion: '.modal-contents-region'
-        },
-        events: {
-            'click .modal-contents-region': 'onClickModalContentsRegion',
-            'click .close-icon': 'onClickClose',
-        },
-        ui: {
-            overlay: '.modal-overlay',
-        },
-        positionModal: function() {
-            var view = this.options.view,
-                windowHeight = Backbone.$(window).outerHeight(),
-                viewHeight = view.$el.outerHeight();
-            if (windowHeight > viewHeight) {
-                var margin = Math.floor((windowHeight - viewHeight) / 2);
-                view.$el.css('margin-top', margin + 'px');
-            } else {
-                view.$el.css('margin-top', '0');
-            }
-        },
-        onDestroy: function() {
-            Backbone.$('body').css('overflow', 'visible');
-        },
-        onRender: function() {
-            this.showChildView('contentsRegion', this.options.view);
-            //this.contentsRegion.show(this.options.view);
-            Backbone.$('body').css('overflow', 'hidden');
-
-            var self = this;
-            this.listenTo(Backbone.$(document).keydown(function(e){
-                self.onKeyPress(e.which);
-            }));
-        },
-        onClickClose: function(event) {
-            this.destroy();
-            event.stopPropagation();
-        },
-        onClickModalContentsRegion: function(event) {
-            if (this.options.closeOnContentClick
-                || event.target === this.getRegion('contentsRegion').el) {
-                this.destroy();
-            }
-        },
-        onKeyPress: function(code) {
-            console.log('.')
-            var closeKey = this.options.closeKey || 'escape';
-
-            if ( // 27 is escape
-                (closeKey === 'escape' && code === 27) ||
-                (closeKey === 'all')
-               ) {
-                this.destroy();
-            }
-        }
     });
 
     var UINotificationView = Marionette.View.extend({
@@ -287,25 +166,6 @@ define(function(require) {
         }
     });
 
-    // Scroll tool view
-    //var ScrollToolView = Marionette.ItemView.extend({
-    var ScrollToolView = Marionette.View.extend({
-        className: 'scroll-tool-view',
-        template: false,
-        initialize: function() {
-            this.label = "JUMP TO BOTTOM";
-            this.count = 0;
-            this.listenTo(Channel, 'receive', function() {
-                this.count += 1;
-                this.label = "NEW MESSAGES (" + this.count + ")";
-                this.render();
-            }, this);
-        },
-        onRender: function() {
-            this.$el.html("<div class='new-messages'>" + this.label + "</div>");
-        },
-    });
-
 
     /* ========================== */
 
@@ -316,14 +176,11 @@ define(function(require) {
             modalRegion: '#wot-modal',
             notificationRegion: '#notification-box',
             timerRegion: '#timer-region',
-            headerRegion: '.header-region',
             mainRegion: '.main-region',
-            scrollToolRegion: '.scroll-tool-region',
         },
 
         events: {
             'click .help-icon': 'onClickHelpIcon',
-            'click .new-messages': 'onClickNewMessages',
         },
         onClickHelpIcon: function() {
             Channel.trigger('help');
@@ -331,6 +188,7 @@ define(function(require) {
 
         initialize: function() {
             this.logging_in = false;
+            this.logged_in = false;
 
             this.listenTo(Channel, 'login', this.onLogin);
 
@@ -340,10 +198,6 @@ define(function(require) {
             this.listenTo(Channel, 'notify', this.onNotify);
             this.listenTo(Channel, 'notify:error', this.onNotifyError);
             this.listenTo(Channel, 'help', this.onHelp);
-
-            // If a console user starts to scroll, the console will emit this
-            this.listenTo(Channel, 'scroll:active', this.onActiveScroll);
-            this.listenTo(Channel, 'scroll:reset', this.onResetScroll);
         },
 
         onRender: function() {
@@ -380,14 +234,8 @@ define(function(require) {
                 game_map: game_map
             }));
 
+            this.logged_in = true;
             Channel.trigger('notify', 'Connected');
-        },
-        disconnect: function(message) {
-            this.showChildView('mainRegion', new LoginView());
-            //this.mainRegion.show(new LoginView());
-            Channel.trigger('notify', 'Connection closed.');
-            this.showChildView('timerRegion', new TimerView());
-            //this.timerRegion.show(new TimerView());
         },
         onLogin: function(data) {
             /*
@@ -401,9 +249,11 @@ define(function(require) {
                 this.logging_in = true;
             }
 
+            var self = this;
+
             this.websocket = new WebSocket(Config.wotWsServer);
             this.websocket.onopen = function(event) {
-                Channel.trigger('notify', 'Logging in...');
+                Channel.trigger('notify', 'Logging in...', 'info', false);
                 Channel.trigger('send', {
                     'type': 'login',
                     'data': {
@@ -417,10 +267,23 @@ define(function(require) {
                 Channel.trigger('receive', data);
             },
 
-            this.websocket.onerror = function(event) {
+            // this.websocket.onerror = function(event) {
+            //     Channel.trigger(
+            //         'notify:error',
+            //         'No websocket connection available.');
+            //     self.logging_in = false;
+            // }
+
+            this.websocket.onclose = function(event) {
                 Channel.trigger(
                     'notify:error',
                     'No websocket connection available.');
+                self.logging_in = false;
+                if (self.logged_in) {
+                    self.showChildView('mainRegion', new LoginView());
+                    self.showChildView('timerRegion', new TimerView());
+                    self.logged_in = false;
+                }
             }
         },
         onCmd: function(cmd) {
@@ -442,21 +305,27 @@ define(function(require) {
             if (message.type === 'connected') {
                 this.connect(message);
             } else if (message.type === 'disconnected') {
-                this.disconnect();
+                this.showChildView('mainRegion', new LoginView());
+                this.showChildView('timerRegion', new TimerView());
+                Channel.trigger('notify', 'Connection closed.');
                 this.logging_in = false;
+                self.logged_in = false;
             } else if (message.type === 'login-error') {
                 this.onNotifyError(message.data);
                 this.logging_in = false;
             }
         },
 
-        onNotify: function(message, notificationType) {
+        onNotify: function(message, notificationType, autoHide) {
+            // make autoHide true by default
+            if (autoHide === undefined) autoHide = true;
+
             this.showChildView('notificationRegion', new UINotificationView({
                 model: new Backbone.Model({
                     message: message,
                     notificationType: notificationType
                 }),
-                autoHide: true
+                autoHide: autoHide
             }));
         },
         onNotifyError: function(message) {
@@ -465,23 +334,23 @@ define(function(require) {
 
         /* ==== Scrolling ==== */
 
+        /*
         onActiveScroll: function() {
             if (!this.getRegion('scrollToolRegion').hasView()) {
-            //if (!this.scrollToolRegion.hasView()) {
                 this.showChildView('scrollToolRegion', new ScrollToolView({}));
-                //this.scrollToolRegion.show(new ScrollToolView({}));
+            } else {
+                console.log('has view');
             }
         },
         onResetScroll: function() {
             this.getRegion('scrollToolRegion').empty()
-            //this.scrollToolRegion.empty();
         },
         onClickNewMessages: function() {
             Channel.trigger('scroll:bottom');
             Channel.trigger('input:focus');
             this.getRegion('scrollToolRegion').empty()
-            //this.scrollToolRegion.empty()
         },
+        */
 
     });
 
@@ -490,11 +359,6 @@ define(function(require) {
     var app = new Marionette.Application({
         region: '#main'
     });
-
-    // Use mustache-like templating
-    _.templateSettings = {
-        interpolate: /\{\{(.+?)\}\}/g
-    };
 
     // Start controllers
     app.on('start', function(){

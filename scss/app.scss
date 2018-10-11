@@ -1,2 +1,716 @@
-@import "advent";
-//@import "game";
+@import "constants";
+
+.divider {
+    background: url('/assets/divider.png');
+    background-size: 291px;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 291px;
+    height: 12px;
+    margin: 0 auto;
+}
+
+// ==== Common Components
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    color: $color-text;
+
+    &#wot {
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 100;
+        font-size: 12px;
+        line-height: 1.5;
+
+    }
+
+    background: $color-background;
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    a {
+        color: $color-primary;
+        //color: inherit;
+
+        &:hover, &:active, &:focus, .active {
+            //color: inherit;
+            color: $color-primary;
+            text-decoration: none;
+        }
+    }
+
+    .vertical-scrolling {
+        overflow-y: scroll;
+    }
+
+    //.active-nav { color: $color-primary; }
+
+    .hover {
+        &:hover { cursor: pointer; }
+    }
+
+    #advent-modal {
+        top: 0;
+        position: fixed;
+
+        .modal-overlay {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: fixed;
+            background: rgba(0, 0, 0, 0.6);
+
+            &.opaque { // meant to completely obscure what's behind
+                background: rgba(0, 0, 0, 1);
+            }
+        }
+
+        .modal-contents-region {
+            position: fixed;
+            top: 0;
+            overflow-y: scroll;
+            height: 100%;
+            width: 100%;
+        }
+    }
+
+    #main {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-grow: 1;
+
+    }
+
+    .logo-title { width: 165px; }
+    .logo-badge { width: 30px; }
+
+    .form-group {
+        .has-error {
+            border-color: $color-form-border-error;
+        }
+    }
+
+}
+
+
+/* Colors */
+
+.primary-text-color, .color-text-primary { color: $color-primary; }
+.secondary-text-color, .color-text-secondary { color: $color-secondary; }
+.tertiary-text-color, .color-text-tertiary { color: $color-tertiary; }
+
+h1, h2, h3 {
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 1.5px;
+    line-height: 30px;
+}
+h1 { font-size: 25px; }
+h2 { font-size: 21px; }
+h3 { font-size: 17px; }
+
+h1, h2, h3, h4, h5, h6 {
+    color: $color-secondary;
+    @include font-title;
+}
+
+/* General elements */
+
+ol.list { padding-left: 1em; }
+
+ul.list {
+    padding-left: 0;
+    list-style-type: none;
+
+    li {
+        background: url("/assets/list-bullet.png") no-repeat left;
+        background-position: 0 50%;
+        padding-left: 10px;
+    }
+}
+
+
+.centered-text-div {
+    /*
+        Class for a div that takes up all available space and displays a
+        piece of text centered both horizontally and vertically.
+    */
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.half-opacity { opacity: 0.5; }
+
+button.btn-default, a[role=button].btn-default {
+    &.dark-button {
+        &:not(:hover) {
+            background-color: inherit;
+            color: inherit;
+        }
+        &:hover {
+            color: black;
+            border-color: black;
+            background-color: $color-gray-light;
+        }
+    }
+}
+
+
+
+// Global colors
+.mob, .mob_template { color: $color-mob; }
+.item, .item_template { color: $color-item; }
+.room { color: $color-room; }
+
+
+#notification-box {
+    position: relative;
+
+    .ui-notification {
+
+        border: 3px solid $color-green;
+        position: absolute;
+        max-width: 300px;
+        left: 0;
+        right: 0;
+        top: 17px;
+        margin-right: auto;
+        margin-left: auto;
+        z-index: 10000;
+
+        div.notification-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: $color-green-70;
+            z-index: 100;
+        }
+
+        &.error {
+            border-color: $color-red;
+            .notification-background {
+                background-color: $color-red-70;
+            }
+        }
+
+        div.message {
+            position: relative;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            z-index: 110;
+        }
+
+        div.close-button {
+            &:hover { cursor: pointer }
+            position: absolute;
+            right: 6px;
+            top: 0;
+            z-index: 120;
+
+            span {
+                color: $color-text-dark;
+                font-size: 15px;
+            }
+        }
+    }
+}
+
+
+/* ==== WOT client ==== */
+
+#wot-modal {
+    top: 0;
+    position: fixed;
+
+    .modal-overlay {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        position: fixed;
+        background: rgba(0, 0, 0, 0.6);
+
+        &.opaque { // meant to completely obscure what's behind
+            background: rgba(0, 0, 0, 1);
+        }
+    }
+
+    .modal-contents-region {
+        position: fixed;
+        top: 0;
+        overflow-y: scroll;
+        height: 100%;
+        width: 100%;
+    }
+}
+
+.wot-client {
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+    min-width: 0;
+
+    #notification-box > .ui-notification {
+        top: 20px;
+    }
+
+    #timer-region {
+
+        width: 300px;
+        margin: 0 auto;
+        margin-top: 20px;
+
+        .timer-view {
+            color: $color-text-hex-50;
+            width: 300px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+
+            background: rgba(26, 26, 28, 0.8);
+            border: 1px solid #242629;
+        }
+    }
+
+    .header-region {
+        background-color: $color-background-header;
+
+        height: 80px;
+        width: 100%;
+        flex-shrink: 0;
+
+        .inner {
+            width: 100%;
+            max-width: 950px;
+            margin: 0 auto;
+
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+
+            .logo {
+                flex: 1 0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .world-name {
+                @include font-title;
+                font-size: 18px;
+                color: $color-text-hex-50;
+                flex: 2 0;
+                display: flex;
+                justify-content: center;
+
+                a {
+                    color: inherit;
+                    font-weight: 700;
+                    text-decoration: none;
+                }
+
+                .help-icon {
+                    width: 16px;
+                    height: 15px;
+                    &:hover { cursor: pointer; }
+                }
+
+                img.help-icon {
+                    margin-left: 5px;
+                }
+            }
+        }
+
+        .header {
+            background-color: #131217;
+            height: 80px;
+            width: 100%;
+            flex-shrink: 0;
+            .inner {
+                width: 100%;
+                max-width: 950px;
+                margin: 0 auto;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                .logo {
+                    flex: 1 0;
+                    display: flex;
+                    justify-content: center;
+                    img.logo-badge { width: 30px; }
+                }
+                .world-name {
+                    font-size: 18px;
+                    flex: 2 0;
+                    display: flex;
+                    justify-content: center;
+                    a {
+                        color: #808080;
+                        text-decoration: none;
+                        font-weight: 700;
+                    }
+                    .help-icon {
+                        width: 16px;
+                        height: 15px;
+                        &:hover { cursor: pointer; }
+                    }
+                    img.help-icon {
+                        margin-left: 5px;
+                    }
+                }
+            }
+        }
+    }
+
+    .main-region {
+        min-height: 0;
+        min-width: 0;
+
+        position: absolute;
+        top: 80px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+
+        //.login-view.single-form { width: 300px; }
+
+        .game-view {
+            position: absolute;
+            top: 0;
+            bottom: 0px;
+            right: 0;
+            left: 0;
+
+            min-height: 0;
+            min-width: 0;
+
+            max-width: 850px;
+            margin: 0 auto;
+
+            display: flex;
+
+            .corner-map-region {
+
+
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 100;
+                canvas {
+                    background: rgba(26, 26, 28, 0.8);
+                    border: 1px solid #242629;
+                }
+
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+
+            .console-region {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 70px;
+
+                display: flex;
+
+                min-height: 0;
+                min-width: 0;
+
+                .console {
+                    display: flex;
+                    flex-direction: column;
+
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+
+                    padding: 0 20px;
+                    overflow-y: auto;
+                    flex-grow: 1;
+
+                    -webkit-overflow-scrolling: touch;
+
+                    .message {
+                        flex: 0 0 auto;
+
+                        //&:not(:last-child) {
+                        //    margin-bottom: 1em;
+                        //}
+
+                        margin: 0;
+
+                        pre { color: inherit }
+
+                        &.echo {
+                            color: $color-text-hex-50;
+                            margin-bottom: 0;
+                        }
+
+                        &.room-view,
+                        &.prompt {
+                            margin-bottom: 1em;
+                        }
+
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+
+                        span.red {
+                            color: $color-red;
+                            font-weight: 400;
+                        }
+                        span.blue {
+                            color: #99ccff;
+                            font-weight: 400;
+                        }
+                        span.yellow {
+                            color: $color-secondary;
+                        }
+                        span.green {
+                            color: #6ed26e;
+                            font-weight: 400;
+                        }
+                    }
+                }
+            }
+
+            .scroll-tool-region {
+                width: 100%;
+                position: absolute;
+                bottom: 65px;
+                display: flex;
+                flex-direction: column-reverse;
+                z-index: 100;
+
+                .scroll-tool-view {
+
+                    display: flex;
+                    flex-direction: column-reverse;
+                    height: 50px;
+
+                    background: linear-gradient(to bottom,
+                        $color-transparent-rgba,
+                        $color-background-rgba 100%);
+
+                    .new-messages {
+
+                        &:hover { cursor: pointer }
+
+                        border-radius: 2px;
+                        @include font-title;
+                        font-weight: 900;
+
+                        background: $color-primary;
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+
+                        padding: 4px 8px;
+                        margin: 0 auto;
+                        font-size: 10px;
+                        letter-spacing: 0.5px;
+                        line-height: 12px;
+                        display: inline;
+
+                        &::before {
+                            content: '';
+                            display: block;
+                            width: 0;
+                            height: 0;
+                            position: absolute;
+
+                            border-top: 5px solid $color-primary;
+                            border-left: 6px solid transparent;
+                            border-right: 6px solid transparent;
+                            left: 49%;
+                            bottom: -5px;
+                        }
+                    }
+
+                }
+            }
+
+            .input-region {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 0 20px;
+
+                .form-group { margin: 0 }
+
+                .text-input { width: 100% }
+            }
+
+            .room-view {
+                .room-name {
+                    color: #99ccff;
+                    font-weight: 400;
+                }
+
+                .room-items {
+                    color: #6ed26e;
+                }
+
+                .room-mobs {
+                    color: $color-secondary;
+                }
+
+                .room-description {
+                    div:empty:before {
+                       content: "\200b";
+                    }
+                }
+            }
+        }
+    }
+
+    #wot-modal {
+        z-index: 1000;
+
+
+        .modal-contents-region {
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .wot-help {
+
+            background: $color-background;
+            color: $color-text;
+            font-size: 13px;
+            border: 10px solid #020202;
+            padding: 10px;
+            max-width: 760px;
+            margin: 0 auto;
+            vertical-align: middle;
+
+
+            .cmd {
+                color: $color-secondary;
+            }
+
+            .title-banner {
+                width: 100%;
+                display: flex;
+
+                justify-content: space-between;
+
+                .close-icon {
+                    color: $color-red;
+                    padding: 5px;
+
+                    &:hover { cursor: pointer; }
+                }
+            }
+
+            ul {
+                li:not(:last-child) {
+                    margin-bottom: 5px;
+                }
+            }
+
+        }
+    }
+}
+
+.form-group {
+    margin-bottom: 1rem;
+
+    label {
+        @include font-title;
+        color: $color-secondary;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 18px;
+        white-space: nowrap;
+        display: block;
+        padding-bottom: .5rem;
+    }
+
+    input, textarea, select {
+        box-sizing: border-box;
+        font-weight: 30;
+        background: #111;
+        border: 1px solid #424242;
+        color: #ebebeb;
+        border-radius: 2px;
+        font-size: 13px;
+
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        outline: 0;
+    }
+}
+
+button[type=submit] {
+    background-color: $color-primary;
+    border: 0;
+    color: white;
+    font-size: 13px;
+    line-height: 12px;
+    border-radius: 2px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    outline: 0;
+
+    &:hover { cursor: pointer; }
+}
+
+.login-view {
+    width: 200px;
+    margin: 0 auto;
+    align-self: center;
+    border: 10px solid #020202;
+    padding: 30px 40px;
+    h1 {
+        color: #EBEBEB;
+        margin: 0 0 1.5em 0;
+        display: block;
+        width: 100%;
+        border-bottom: 1px solid;
+        padding-bottom: 10px;
+        font-size: 1.5em;
+    }
+    a:hover { text-decoration: underline; }
+}
