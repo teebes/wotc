@@ -1,5 +1,5 @@
 require.config({
-    baseUrl: "/wotc/js",
+    baseUrl: "/wot/js",
 
     deps: ['backbone.radio', 'marionette', 'wot'],
 
