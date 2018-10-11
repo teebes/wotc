@@ -12,11 +12,18 @@ define(function(require) {
         className: 'edit-quest details-box single-page wot-help',
         template: HelpTemplate,
         templateContext: function() {
-            // Replace the 'field' key with 'noride'
-            var room_colors = _.clone(Constants.ROOM_COLORS);
-            var field_color = room_colors.field;
-            delete room_colors.field;
-            room_colors.noride = field_color;
+
+            // Replace 'field' with 'noride' and 'forest' with 'outside'
+            var room_colors = {};
+            for (var color in Constants.ROOM_COLORS) {
+                if (color === 'forest') {
+                    room_colors.outside = Constants.ROOM_COLORS[color];
+                } else if (color === 'field') {
+                    room_colors.noride = Constants.ROOM_COLORS[color];
+                } else {
+                    room_colors[color] = Constants.ROOM_COLORS[color];
+                }
+            }
 
             return {
                 room_flags: Constants.ROOM_FLAGS,

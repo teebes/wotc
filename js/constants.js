@@ -22,7 +22,7 @@ define(function(require) {
     var ROOM_COLORS = {
         road: '#9497a1',
         city: '#65686e',
-        outside: '#207f45',
+        forest: '#207f45',
         indoor: '#a48d73',
         mountain: '#7a5b3e',
         water: '#4798c4',
