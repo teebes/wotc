@@ -2,10 +2,10 @@ define(function(require) {
     "use strict";
 
     var _ = require('underscore'),
-
         Backbone = require('backbone'),
         Radio = require('backbone.radio'),
-        Marionette = require('marionette');
+        Marionette = require('marionette'),
+        Constants = require('constants');
 
     var RoomModel = Backbone.Model.extend({
         idAttribute: "key",
@@ -52,50 +52,6 @@ define(function(require) {
     var MapRoomsCollection = Backbone.Collection.extend({
         model: RoomModel
     });
-
-    var COLORS = {
-        white: '#EBEBEB',
-        gray: '#A2A2A2',
-        green: '#279084',
-        black: '#191A1C',
-        red: '#c13434',
-        primary: '#d77617',
-        purple: '#8934c1',
-        secondary: '#f5c983',
-        pink: '#f583e7'
-    };
-
-    var ROOMCOLORS = {
-        road: '#9497a1',
-        city: '#65686e',
-        indoor: '#a48d73',
-        field: '#8e9422',
-        mountain: '#7a5b3e',
-        water: '#4798c4',
-        forest: '#207f45',
-        desert: '#bf824d',
-    };
-
-    var NORTH = 'north',
-            EAST = 'east',
-            WEST = 'west',
-            SOUTH = 'south',
-            UP = 'up',
-            DOWN = 'down',
-            INVERSE_DIRECTIONS = {
-                NORTH: SOUTH,
-                north: SOUTH,
-                EAST: WEST,
-                east: WEST,
-                SOUTH: NORTH,
-                south: NORTH,
-                WEST: EAST,
-                west: EAST,
-                UP: DOWN,
-                up: DOWN,
-                DOWN: UP,
-                down: UP,
-            };
 
     var MapView = Marionette.View.extend({
         tagName: 'canvas',
@@ -213,7 +169,7 @@ define(function(require) {
 
             if (room_only === undefined) room_only = false;
 
-            var roomColor = ROOMCOLORS[room.attributes.type];
+            var roomColor = Constants.ROOM_COLORS[room.attributes.type];
 
             var x = room.attributes.cx,
                 y = room.attributes.cy,
@@ -239,7 +195,7 @@ define(function(require) {
                     this.drawRoomTab(x, y, room.attributes.flags, true);
                 }
 
-                this.ctx.fillStyle = COLORS.black;
+                this.ctx.fillStyle = Constants.COLORS.black;
                 this.ctx.fillRect(
                     room.attributes.cx + 2,
                     room.attributes.cy + 2,
@@ -272,39 +228,15 @@ define(function(require) {
             var color;
             for (var i = 0; i <= flags.length; i++) {
                 var flag = flags[i];
-                if (flag === 'fountain') {
-                    color = ROOMCOLORS.water;
-                    break;
-                } else if (flag === 'smob') {
-                    color = COLORS.red;
-                    break;
-                } else if (flag === 'trainer') {
-                    color = COLORS.white;
-                    break;
-                } else if (flag === 'exp') {
-                    color = COLORS.primary;
-                    break;
-                } else if (flag === 'horse') {
-                    color = ROOMCOLORS.field;
-                    break;
-                } else if (flag === 'shop') {
-                    color = COLORS.green;
-                    break;
-                } else if (flag === 'inn') {
-                    color = COLORS.purple;
-                    break;
-                } else if (flag === 'herb') {
-                    color = COLORS.secondary;
-                    break;
-                } else if (flag === 'action') {
-                    color = COLORS.pink;
+                if (flag in Constants.ROOM_FLAGS) {
+                    color = Constants.ROOM_FLAGS[flag]
                     break;
                 }
             }
 
             if (color) {
                 this.ctx.beginPath();
-                this.ctx.fillStyle = COLORS.black;
+                this.ctx.fillStyle = Constants.COLORS.black;
                 this.ctx.moveTo(x - 3 - selected + this.unit, y - selected);
                 this.ctx.lineTo(x + this.unit * 2 + selected, y - selected);
                 this.ctx.lineTo(x + this.unit * 2 + selected, y + this.unit + 3 - selected);
@@ -321,7 +253,7 @@ define(function(require) {
 
         drawTriangle: function(x, y, options) {
             var options = options || {},
-                color = options.selected ? COLORS.white : COLORS.black,
+                color = options.selected ? Constants.COLORS.white : Constants.COLORS.black,
                 size = options.size || 2;
 
             this.ctx.beginPath();
@@ -338,7 +270,7 @@ define(function(require) {
             this.ctx.fill();
         },
         drawConnection: function(room, dir) {
-            var revDir = INVERSE_DIRECTIONS[dir];
+            var revDir = Constants.INVERSE_DIRECTIONS[dir];
             var exitRoomAttrs = room.get(dir);
             if (!exitRoomAttrs) return;
 
@@ -385,7 +317,7 @@ define(function(require) {
                 }
             }
 
-            this.ctx.strokeStyle = COLORS.white;
+            this.ctx.strokeStyle = Constants.COLORS.white;
             this.ctx.beginPath();
             this.ctx.moveTo(fromCoords[0], fromCoords[1]);
             this.ctx.lineTo(toCoords[0], toCoords[1]);
@@ -405,7 +337,7 @@ define(function(require) {
                 y = toCoords[1];
             this.ctx.beginPath();
             this.ctx.lineWidth = 2;
-            this.ctx.strokeStyle = COLORS.white;
+            this.ctx.strokeStyle = Constants.COLORS.white;
             this.ctx.moveTo(x, y);
             if (dir === 'east') {
                 this.ctx.lineTo(x - 4, y - 4);
@@ -456,7 +388,7 @@ define(function(require) {
             if (dir === 'south') {
                 var yOffset = isDown ? 11 : 5;
 
-                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.strokeStyle = Constants.COLORS.white;
                 this.ctx.lineWidth = 2;
                 this.ctx.moveTo(toCoords[0], toCoords[1]);
                 this.ctx.lineTo(toCoords[0], toCoords[1] + yOffset);
@@ -470,7 +402,7 @@ define(function(require) {
             } else if (dir == 'east') {
                 var yOffset = isDown ? -3 : 3;
 
-                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.strokeStyle = Constants.COLORS.white;
                 this.ctx.lineWidth = 2;
                 this.ctx.moveTo(toCoords[0], toCoords[1]);
                 this.ctx.lineTo(toCoords[0] + 8, toCoords[1]);
@@ -484,7 +416,7 @@ define(function(require) {
             } else if (dir == 'west') {
                 var yOffset = isDown ? -3 : 3;
 
-                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.strokeStyle = Constants.COLORS.white;
                 this.ctx.lineWidth = 2;
                 this.ctx.moveTo(toCoords[0], toCoords[1]);
                 this.ctx.lineTo(toCoords[0] - 8, toCoords[1]);
@@ -498,7 +430,7 @@ define(function(require) {
             } else if (dir == 'north') {
                 var yOffset = isDown ? 5 : 11;
 
-                this.ctx.strokeStyle = COLORS.white;
+                this.ctx.strokeStyle = Constants.COLORS.white;
                 this.ctx.lineWidth = 2;
                 this.ctx.moveTo(toCoords[0], toCoords[1]);
                 this.ctx.lineTo(toCoords[0], toCoords[1] - yOffset);

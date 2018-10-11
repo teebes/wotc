@@ -29,4 +29,19 @@
 
     <li>Use the up and down arrow keys on your keyboard to cycle through your command history.</li>
 
+    <li>
+        Room colors:
+        {{#each room_colors}}
+            <span style='color: {{this}}'>{{@key}}</span>
+        {{/each}}
+    </li>
+
+    <li>
+        Room flags:
+        {{#each room_flags}}
+            <span style='color: {{this}}'>{{@key}}</span>
+        {{/each}}
+    </li>
+
 </ul>
+

@@ -69,11 +69,11 @@ define(function(require) {
         GameView = require('game/index'),
         LoginView = require('login'),
         ModalView = require('modal'),
+        HelpView = require('help'),
 
         color_lines = require('utils/color_lines'),
 
         IndexTemplate = require('hbs!templates/wot/index'),
-        HelpTemplate = require('hbs!templates/wot/help'),
         ModalTemplate = require('hbs!templates/wot/modal'),
         UINotificationTemplate = require('hbs!templates/wot/ui_notification_message'),
 
@@ -129,10 +129,7 @@ define(function(require) {
         }
     });
 
-    var HelpView = Marionette.View.extend({
-        className: 'edit-quest details-box single-page wot-help',
-        template: HelpTemplate,
-    });
+
 
     var UINotificationView = Marionette.View.extend({
         className: function() {

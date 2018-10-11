@@ -59,7 +59,6 @@ define(function(require) {
             }
         },
         onKeyPress: function(code) {
-            console.log('.')
             var closeKey = this.options.closeKey || 'escape';
 
             if ( // 27 is escape
