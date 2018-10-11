@@ -420,11 +420,11 @@ button.btn-default, a[role=button].btn-default {
 
             .corner-map-region {
 
-
-                position: fixed;
-                top: 80px;
+                position: absolute;
+                top: 0px;
                 right: 0;
                 z-index: 100;
+
                 canvas {
                     background: rgba(26, 26, 28, 0.8);
                     border: 1px solid #242629;
@@ -459,6 +459,7 @@ button.btn-default, a[role=button].btn-default {
 
                     padding: 0 20px;
                     overflow-y: auto;
+                    overflow-x: hidden;
                     flex-grow: 1;
 
                     -webkit-overflow-scrolling: touch;
@@ -472,7 +473,10 @@ button.btn-default, a[role=button].btn-default {
 
                         margin: 0;
 
-                        pre { color: inherit }
+                        pre {
+                            color: inherit;
+                            overflow: hidden;
+                        }
 
                         &.echo {
                             color: $color-text-hex-50;
