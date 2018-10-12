@@ -100,7 +100,7 @@ define(function(require) {
 
                     word = word.toLowerCase()
                     if (!excludeWords.includes(word)
-                        && word.match(lastToken)) {
+                        && word.match('^' + lastToken)) {
                         replacement = word;
                         return true;
                     }
