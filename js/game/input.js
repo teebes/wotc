@@ -85,9 +85,11 @@ define(function(require) {
             if (tokens.length === 1) return;
 
             var excludeWords = [
-                'a', 'the', 'an', 'of', 'for', 'on', 'is', 'here', 'with',
-                'stand', 'stands', 'standing', 'resting', 'sitting',
-                'fighting', 'sleeping',
+                'a', 'the', 'an', 'of', 'for', 'on', 'with', 'from',
+                'any', 'never', 'always', 'very',
+                'is', 'here', 'stand', 'stands', 'lies',
+                'standing', 'resting', 'sitting', 'fighting', 'sleeping',
+                'lying',
             ];
             var mobs = data.currentRoom.mobs,
                 items = data.currentRoom.items,
