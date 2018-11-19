@@ -53,15 +53,52 @@ define(function(require) {
 
             this.lastCommand = cmd;
 
-            this.commandHistory = _.without(this.commandHistory, cmd)
+            //this.commandHistory = _.without(this.commandHistory, cmd)
 
             // Second, we insert the newest command at the bottom of the
             // stack so that [0] pulls the most recent command
-            this.commandHistory.splice(0, 0, cmd)
+            if (this.lastCommand && this.lastCommand != this.commandHistory[0])
+                this.commandHistory.splice(0, 0, cmd)
 
             // Only keep history through 20 recent
             if (this.commandHistory.length > 20) {
                 this.commandHistory.splice(20)
+            }
+
+            // Special case to handle doors
+            if (data.currentRoom) {
+                var noteField = data.currentRoom.note;
+                var re = /(\w)\s-\s(\w+)/;
+                var dirs = {};
+                if (noteField) {
+                    var notes = noteField.split('|');
+
+                    _.each(notes, function(note) {
+                        note = note.trim()
+                        var match = re.exec(note);
+                        if (match) {
+                            dirs[match[1]] = match[2]
+                        }
+                    })
+
+                    var cmdRe = /([okluc])d([neswud])/;
+                    var cmdMatch = cmdRe.exec(cmd)
+                    if (dirs && cmdMatch) {
+                        var code = cmdMatch[1], doorAction;
+                        if (code == 'o') doorAction = 'open';
+                        if (code == 'k') doorAction = 'knock';
+                        if (code == 'l') doorAction = 'lock';
+                        if (code == 'u') doorAction = 'unlock';
+                        if (code == 'c') doorAction = 'close';
+
+                        var doorDir = cmdMatch[2]
+                        var doorName = dirs[doorDir]
+
+                        if (doorName) {
+                            cmd = doorAction + ' ' + doorName + ' ' + doorDir
+                        }
+                    }
+                }
             }
 
             Channel.trigger('cmd', cmd)
@@ -70,7 +107,7 @@ define(function(require) {
             return false;
         },
 
-       // Special keys
+        // Special keys
         onTab: function(event) {
 
             // Get the input
