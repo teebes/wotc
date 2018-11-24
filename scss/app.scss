@@ -328,6 +328,11 @@ button.btn-default, a[role=button].btn-default {
         top: 20px;
     }
 
+    .tic-timer-region {
+        width: 20px;
+        text-align: center;
+    }
+
     #timer-region {
 
         width: 300px;
@@ -649,8 +654,9 @@ button.btn-default, a[role=button].btn-default {
                 }
             }
         }
-    }
 
+        &.wide > .game-view { max-width: none; }
+    }
 
 }
 

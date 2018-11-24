@@ -92,7 +92,7 @@ define(function(require) {
         initialize: function() {
             this.tstart = new Date();
         },
-        onnRender: function() {
+        onRender: function() {
             var seconds_since = Math.ceil((new Date() - this.tstart) / 1000);
 
             var minutes = Math.floor(seconds_since / 60);
@@ -164,6 +164,30 @@ define(function(require) {
     });
 
 
+    var TicTimerView = Marionette.View.extend({
+        template: _.template("{{ secondsLeft }}"),
+        templateContext: function() {
+            return {
+                secondsLeft: this.secondsLeft
+            }
+        },
+        onAttach: function() {
+            var self = this;
+            this.secondsLeft = 60;
+            this.intervalId = setInterval(function() {
+                if (self.secondsLeft <= 1) {
+                    self.secondsLeft = 60
+                } else {
+                    self.secondsLeft -= 1;
+                }
+                self.render();
+            }, 1000);
+        },
+        onDestroy: function() {
+            clearInterval(this.intervalId)
+        }
+    })
+
     /* ========================== */
 
     var MainView = Marionette.View.extend({
@@ -174,6 +198,7 @@ define(function(require) {
             notificationRegion: '#notification-box',
             timerRegion: '#timer-region',
             mainRegion: '.main-region',
+            ticTimerRegion: '.tic-timer-region',
         },
 
         events: {
@@ -195,6 +220,7 @@ define(function(require) {
             this.listenTo(Channel, 'notify', this.onNotify);
             this.listenTo(Channel, 'notify:error', this.onNotifyError);
             this.listenTo(Channel, 'help', this.onHelp);
+            this.listenTo(Channel, 'tic', this.onTic);
         },
 
         onRender: function() {
@@ -210,11 +236,11 @@ define(function(require) {
                 view: new HelpView()
             })
             this.showChildView('modalRegion', modalView);
-            //this.modalRegion.show(modalView);
         },
         connect: function(message) {
             this.getRegion('timerRegion').empty();
-            //this.timerRegion.empty();
+
+            data.config = message.data.config;
 
             var game_map = new Backbone.Collection();
             // Due to some odd bug, defining a model that uses key
@@ -226,7 +252,10 @@ define(function(require) {
                 game_map.add(new Backbone.Model(roomData));
             }
 
-            //this.mainRegion.show(new GameView({
+            if (data.config.layout === 'wide') {
+                this.$el.find('.main-region').addClass('wide')
+            }
+
             this.showChildView('mainRegion', new GameView({
                 game_map: game_map
             }));
@@ -307,9 +336,23 @@ define(function(require) {
                 Channel.trigger('notify', 'Connection closed.');
                 this.logging_in = false;
                 self.logged_in = false;
+                var view = this.getChildView('ticTimerRegion')
+                if (view) { view.destroy() }
             } else if (message.type === 'login-error') {
                 this.onNotifyError(message.data);
                 this.logging_in = false;
+            } else if (message.type === 'config') {
+                data.config = message.config
+                
+                if (data.config.tictimer && data.config.tictimer !== 'true') {
+                    this.onTic()
+                }
+
+                if (data.config.layout === 'wide') {
+                    this.$el.find('.main-region').addClass('wide')
+                } else {
+                    this.$el.find('.main-region').removeClass('wide')
+                }
             }
         },
 
@@ -328,6 +371,13 @@ define(function(require) {
         onNotifyError: function(message) {
             Channel.trigger('notify', message, 'error');
         },
+
+        onTic: function() {
+            var view = this.getChildView('ticTimerRegion')
+            if (view) { view.destroy() }
+            if (data.config.tictimer !== 'true') { return; }
+            this.showChildView('ticTimerRegion', new TicTimerView());
+        }
 
         /* ==== Scrolling ==== */
 

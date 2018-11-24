@@ -59,7 +59,6 @@ define(function(require) {
         },
         events: {
             'click .corner-map-region': 'onClickMap',
-
         },
         initialize: function () {
             this.collection = new Backbone.Collection();
@@ -147,7 +146,7 @@ define(function(require) {
                 this.game_map = game_map;
                 this.showBigMap();
 
-            } else  if (message.type === 'room') {
+            } else if (message.type === 'room') {
                 var messageModel = new Backbone.Model(message);
                 this.collection.add(messageModel);
 
@@ -175,6 +174,8 @@ define(function(require) {
                 var messageModel = new Backbone.Model(message);
                 this.collection.add(messageModel);
 
+            } else if (message.type === 'tic') {
+                Channel.trigger('tic')
             } else {
                 _.each(message.data, function(line) {
 

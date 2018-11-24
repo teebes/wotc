@@ -3,5 +3,6 @@ define(function(require) {
     return {
         launched: false,
         currentRoom: null,
+        ticTimer: false,
     };
 });
