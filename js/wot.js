@@ -252,7 +252,10 @@ define(function(require) {
                 game_map.add(new Backbone.Model(roomData));
             }
 
+            console.log('config data is:')
+            console.log(data.config)
             if (data.config.layout === 'wide') {
+                console.log('setting main region to be wide')
                 this.$el.find('.main-region').addClass('wide')
             }
 
