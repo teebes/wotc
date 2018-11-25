@@ -100,6 +100,11 @@ define(function(require) {
             if (radius == 8) size = 416;
             if (radius == 9) size = 464;
             if (radius == 10) size = 512;
+            if (radius == 11) size = 560;
+            if (radius == 12) size = 608;
+            if (radius == 13) size = 656;
+            if (radius == 14) size = 704;
+            if (radius == 15) size = 752;
 
             this.mapView = new MapView({
                 map: this.game_map,
