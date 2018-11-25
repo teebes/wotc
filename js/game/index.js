@@ -72,6 +72,7 @@ define(function(require) {
             this.mapView = null;
             this.listenTo(Channel, 'receive', this.onReceive);
             this.listenTo(Channel, 'send', this.onSend);
+            this.listenTo(Channel, 'map:resize', this.showBigMap);
 
             // If a console user starts to scroll, the console will emit this
             this.listenTo(Channel, 'scroll:active', this.onActiveScroll);
@@ -86,16 +87,29 @@ define(function(require) {
         },
 
         showBigMap: function() {
+
+            var radius = parseInt(data.config.mapsize) || 5;
+            var size;
+
+            if (radius == 2) size = 128;
+            if (radius == 3) size = 176;
+            if (radius == 4) size = 224;            
+            if (radius == 5) size = 270;
+            if (radius == 6) size = 320;
+            if (radius == 7) size = 368;
+            if (radius == 8) size = 416;
+            if (radius == 9) size = 464;
+            if (radius == 10) size = 512;
+
             this.mapView = new MapView({
                 map: this.game_map,
                 centerKey: this.current_room_key,
                 selectedKey: this.current_room_key,
-                width: 270,
-                radius: 5,
+                width: size,
+                radius: radius,
                 clickable: false,
             })
             this.showChildView('mapRegion', this.mapView);
-            //this.mapRegion.show(this.mapView);
             this.mapSize = 'big';
         },
 
@@ -109,7 +123,6 @@ define(function(require) {
                 clickable: false,
             })
             this.showChildView('mapRegion', this.mapView);
-            //this.mapRegion.show(this.mapView);
             this.mapSize = 'small';
         },
 

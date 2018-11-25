@@ -295,13 +295,6 @@ define(function(require) {
                 Channel.trigger('receive', data);
             },
 
-            // this.websocket.onerror = function(event) {
-            //     Channel.trigger(
-            //         'notify:error',
-            //         'No websocket connection available.');
-            //     self.logging_in = false;
-            // }
-
             this.websocket.onclose = function(event) {
                 Channel.trigger(
                     'notify:error',
@@ -355,6 +348,8 @@ define(function(require) {
                 } else {
                     this.$el.find('.main-region').removeClass('wide')
                 }
+
+                Channel.trigger('map:resize');
             }
         },
 
