@@ -54,6 +54,9 @@ body {
     @include font-title;
     font-weight: 700;
     color: $color-text-hex-50;
+    @media (max-width: 650px) {
+      height: 50px;
+    }
   }
 
   h1,
@@ -82,7 +85,7 @@ body {
   label {
     @include font-title;
     color: $color-secondary;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0;
     line-height: 18px;
