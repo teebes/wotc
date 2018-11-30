@@ -112,17 +112,17 @@
 
         <div class="form-group">
           <label for="field-defender_bmi">BMI</label>
-          <input id="field-defender_bmi" v-model="defender.bmi">
+          <input id="field-defender_bmi" v-model.number="defender.bmi">
         </div>
 
         <div class="form-group">
           <label for="field-defender_db">DB</label>
-          <input id="field-defender_db" v-model="defender.db">
+          <input id="field-defender_db" v-model.number="defender.db">
         </div>
 
         <div class="form-group">
           <label for="field-defender_level">Level</label>
-          <input id="field-defender_level" v-model="defender.level">
+          <input id="field-defender_level" v-model.number="defender.level">
         </div>
       </div>
     </div>
