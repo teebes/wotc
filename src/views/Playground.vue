@@ -48,7 +48,7 @@
     <div class="participants">
       <div class="attacker-info panel">
         <form @submit.prevent="submit" autocomplete="off">
-          <h2>Attacker</h2>
+          <h2>ATTACKER</h2>
 
           <div class="pair">
             <div class="form-group">
@@ -108,7 +108,7 @@
       </div>
 
       <div class="defender-info panel">
-        <h2>Defender</h2>
+        <h2>DEFENDER</h2>
 
         <div class="form-group">
           <label for="field-defender_bmi">BMI</label>
@@ -271,7 +271,10 @@ export default class Playground extends Vue {
     .defender-info {
       flex-grow: 1;
       h2 {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        color: $color-text-hex-50;
+        font-weight: 700;
+        font-size: 14px;
       }
     }
 
@@ -309,7 +312,7 @@ export default class Playground extends Vue {
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
       background: $color-background-light;
       border: 1px solid $color-background-light-border;
-      padding: 10px;
+      padding: 15px;
     }
   }
 }
