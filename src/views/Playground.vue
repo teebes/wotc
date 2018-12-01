@@ -210,11 +210,14 @@ export default class Playground extends Vue {
 
     if (ch.wield_weight >= 100) {
       const attacker_portion =
-        ((ch.wield_weight / 50) * ch.wield_ob) / 3 + ch.wield_pb;
+        ((ch.wield_weight / 50) * ch.wield_ob) / 3 + ch.wield_pb / 4;
       const defender_portion = (victim.db * 3) / 2;
       prob = Math.min(30, attacker_portion - defender_portion);
     } else {
-      prob = Math.min(20, ch.wield_ob / 2 + ch.wield_pb / 4 - (ch.db * 3) / 2);
+      prob = Math.min(
+        20,
+        ch.wield_ob / 2 + ch.wield_pb / 4 - (victim.db * 3) / 2
+      );
     }
     return prob;
   }
