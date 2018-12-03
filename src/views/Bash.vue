@@ -62,6 +62,7 @@
                 id="field-wield_weight"
                 v-model.number="attacker.wield_weight"
                 inputmode="numeric"
+                pattern="[0-9]*"
               >
             </div>
 
@@ -79,12 +80,22 @@
           <div class="pair">
             <div class="form-group">
               <label for="field-char_ob">Char OB</label>
-              <input id="field-char_ob" v-model.number="attacker.wield_ob" inputmode="numeric">
+              <input
+                id="field-char_ob"
+                v-model.number="attacker.wield_ob"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
             </div>
 
             <div class="form-group">
               <label for="field-char_pb">Char PB</label>
-              <input id="field-char_pb" v-model.number="attacker.wield_pb" inputmode="numeric">
+              <input
+                id="field-char_pb"
+                v-model.number="attacker.wield_pb"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
             </div>
           </div>
 
@@ -107,6 +118,7 @@
                 id="field-weapon_skill"
                 v-model.number="attacker.weapon_skill"
                 inputmode="numeric"
+                pattern="[0-9]*"
               >
             </div>
           </div>
@@ -119,6 +131,7 @@
                   id="field-attacker_char_feet"
                   v-model.number="attacker.char_feet"
                   inputmode="numeric"
+                  pattern="[0-9]*"
                 >
               </div>
 
@@ -128,6 +141,7 @@
                   id="field-attacker_char_inches"
                   v-model.number="attacker.char_inches"
                   inputmode="numeric"
+                  pattern="[0-9]*"
                 >
               </div>
             </div>
@@ -139,6 +153,7 @@
                   id="field-attacker_naked_weight"
                   v-model.number="attacker.naked_weight"
                   inputmode="numeric"
+                  pattern="[0-9]*"
                 >
               </div>
 
@@ -148,13 +163,19 @@
                   id="field-attacker_carry_weight"
                   v-model.number="attacker.carry_weight"
                   inputmode="numeric"
+                  pattern="[0-9]*"
                 >
               </div>
             </div>
 
             <div class="form-group">
               <label for="field-attacker_level">Level</label>
-              <input id="field-attacker_level" v-model.number="attacker.level" inputmode="numeric">
+              <input
+                id="field-attacker_level"
+                v-model.number="attacker.level"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
             </div>
           </template>
         </form>
@@ -165,7 +186,12 @@
 
         <div class="form-group">
           <label for="field-defender_db">DB</label>
-          <input id="field-defender_db" v-model.number="defender.db" inputmode="numeric">
+          <input
+            id="field-defender_db"
+            v-model.number="defender.db"
+            inputmode="numeric"
+            pattern="[0-9]*"
+          >
         </div>
 
         <template v-if="advanced_stats">
@@ -175,6 +201,7 @@
               id="field-defender_char_feet"
               v-model.number="defender.char_feet"
               inputmode="numeric"
+              pattern="[0-9]*"
             >
           </div>
 
@@ -184,6 +211,7 @@
               id="field-defender_char_inches"
               v-model.number="defender.char_inches"
               inputmode="numeric"
+              pattern="[0-9]*"
             >
           </div>
 
@@ -193,6 +221,7 @@
               id="field-defender_naked_weight"
               v-model.number="defender.naked_weight"
               inputmode="numeric"
+              pattern="[0-9]*"
             >
           </div>
 
@@ -202,12 +231,18 @@
               id="field-defender_carry_weight"
               v-model.number="defender.carry_weight"
               inputmode="numeric"
+              pattern="[0-9]*"
             >
           </div>
 
           <div class="form-group">
             <label for="field-defender_level">Level</label>
-            <input id="field-defender_level" v-model.number="defender.level" inputmode="numeric">
+            <input
+              id="field-defender_level"
+              v-model.number="defender.level"
+              inputmode="numeric"
+              pattern="[0-9]*"
+            >
           </div>
         </template>
       </div>
