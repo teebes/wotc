@@ -67,7 +67,12 @@
 
             <div class="form-group">
               <label for="field-bash_skill">Bash Skill</label>
-              <input id="field-bash_skill" v-model.number="attacker.bash_skill" inputmode="numeric">
+              <input
+                id="field-bash_skill"
+                v-model.number="attacker.bash_skill"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
             </div>
           </div>
 
