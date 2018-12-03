@@ -1,6 +1,8 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Home from "./views/Home.vue";
+import Bash from "@/views/Bash.vue";
+import Stab from "@/views/Stab.vue";
 import Playground from "./views/Playground.vue";
 
 Vue.use(Router);
@@ -11,8 +13,19 @@ export default new Router({
   routes: [
     {
       path: "/",
+      alias: "/bash",
       name: "home",
-      component: Playground
+      component: Bash
+    },
+    // {
+    //   path: "/bash",
+    //   name: "bash",
+    //   component: Bash
+    // },
+    {
+      path: "/stab",
+      name: "stab",
+      component: Stab
     },
     {
       path: "/about",
