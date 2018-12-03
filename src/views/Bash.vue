@@ -1,5 +1,5 @@
 <template>
-  <div id="bash-tool">
+  <div class="playground-tool">
     <div class="results">
       <div class="inner">
         <h1>
@@ -163,7 +163,7 @@
                   id="field-attacker_carry_weight"
                   v-model.number="attacker.carry_weight"
                   inputmode="numeric"
-                  pattern="[0-9\.]*"
+                  pattern="[0-9.]*"
                 >
               </div>
             </div>
@@ -231,7 +231,7 @@
               id="field-defender_carry_weight"
               v-model.number="defender.carry_weight"
               inputmode="numeric"
-              pattern="[0-9\.]*"
+              pattern="[0-9.]*"
             >
           </div>
 
@@ -382,90 +382,4 @@ export default class extends Vue {
 
 <style lang='scss'>
 @import "@/styles/base.scss";
-
-#bash-tool {
-  max-width: 375px;
-  width: 100%;
-  margin: 0 auto;
-  margin-bottom: 20px;
-
-  .results {
-    margin: 0 auto;
-    padding: 20px;
-
-    .inner {
-      margin: 0 auto;
-
-      h1 {
-        margin-top: 10px;
-        @media (min-width: 650px) {
-          margin-top: 25px;
-        }
-        margin-bottom: 10px;
-      }
-
-      table.results-table {
-        tr {
-          td:first-child {
-            padding-right: 30px;
-            color: $color-text-hex-70;
-          }
-        }
-      }
-    }
-  }
-
-  .participants {
-    display: flex;
-    justify-content: space-between;
-
-    .attacker-info,
-    .defender-info {
-      flex-grow: 1;
-      h2 {
-        margin-bottom: 15px;
-        color: $color-text-hex-50;
-        font-weight: 700;
-        font-size: 14px;
-      }
-    }
-
-    .attacker-info {
-      flex: 2;
-      margin-right: 20px;
-
-      .pair {
-        display: flex;
-        > div {
-          &:not(:first-child) {
-            padding-left: 5px;
-          }
-          &:not(:last-child) {
-            padding-right: 5px;
-          }
-          flex: 1;
-        }
-      }
-
-      .is_riding {
-        margin-bottom: 0;
-        padding-top: 8px;
-        label {
-          padding-bottom: 0;
-        }
-      }
-    }
-
-    .defender-info {
-      flex: 1;
-    }
-
-    .panel {
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-      background: $color-background-light;
-      border: 1px solid $color-background-light-border;
-      padding: 15px;
-    }
-  }
-}
 </style>
