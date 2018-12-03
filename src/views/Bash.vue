@@ -163,7 +163,7 @@
                   id="field-attacker_carry_weight"
                   v-model.number="attacker.carry_weight"
                   inputmode="numeric"
-                  pattern="[0-9]*"
+                  pattern="[0-9\.]*"
                 >
               </div>
             </div>
@@ -231,7 +231,7 @@
               id="field-defender_carry_weight"
               v-model.number="defender.carry_weight"
               inputmode="numeric"
-              pattern="[0-9]*"
+              pattern="[0-9\.]*"
             >
           </div>
 
