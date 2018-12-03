@@ -13,15 +13,15 @@ export default new Router({
   routes: [
     {
       path: "/",
-      alias: "/bash",
+      //alias: "/bash",
       name: "home",
+      redirect: "bash"
+    },
+    {
+      path: "/bash",
+      name: "bash",
       component: Bash
     },
-    // {
-    //   path: "/bash",
-    //   name: "bash",
-    //   component: Bash
-    // },
     {
       path: "/stab",
       name: "stab",
