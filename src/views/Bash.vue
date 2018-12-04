@@ -170,13 +170,7 @@
 
             <div class="form-group">
               <label for="field-attacker_bmi">Attacker BMI</label>
-              <input
-                id="field-attacker_bmi"
-                :value="attacker_bmi"
-                inputmode="numeric"
-                pattern="[0-9]*"
-                readonly
-              >
+              <div>{{ attacker_bmi.toPrecision(6) }}</div>
             </div>
 
             <div class="form-group">
@@ -248,13 +242,7 @@
 
           <div class="form-group">
             <label for="field-defender_bmi">Defender BMI</label>
-            <input
-              id="field-defender_bmi"
-              :value="defender_bmi"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              readonly
-            >
+            <div>{{ defender_bmi.toPrecision(6) }}</div>
           </div>
 
           <div class="form-group">
