@@ -328,7 +328,7 @@ export default class extends Vue {
   get bash_chance() {
     let prob = 30 + this.bmi_portion + this.stats_portion;
     prob += this.ride_bonus;
-    prob *= this.attacker.bash_skill / 99;
+    prob = prob + Math.trunc(this.attacker.bash_skill / 99);
     prob = Math.max(0, prob);
 
     prob += this.clubs_bonus;
@@ -377,7 +377,7 @@ export default class extends Vue {
         ch.wield_ob / 2 + ch.wield_pb / 4 - (victim.db * 3) / 2
       );
     }
-    return prob;
+    return Math.trunc(prob);
   }
 
   get ride_bonus() {
@@ -385,7 +385,9 @@ export default class extends Vue {
   }
 
   get clubs_bonus() {
-    return this.attacker.is_clubs ? this.attacker.weapon_skill / 10 : 0;
+    return Math.trunc(
+      this.attacker.is_clubs ? this.attacker.weapon_skill / 10 : 0
+    );
   }
 }
 </script>
