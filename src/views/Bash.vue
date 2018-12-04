@@ -169,6 +169,17 @@
             </div>
 
             <div class="form-group">
+              <label for="field-attacker_bmi">Attacker BMI</label>
+              <input
+                id="field-attacker_bmi"
+                :value="attacker_bmi"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                readonly
+              >
+            </div>
+
+            <div class="form-group">
               <label for="field-attacker_level">Level</label>
               <input
                 id="field-attacker_level"
@@ -236,6 +247,17 @@
           </div>
 
           <div class="form-group">
+            <label for="field-defender_bmi">Defender BMI</label>
+            <input
+              id="field-defender_bmi"
+              :value="defender_bmi"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              readonly
+            >
+          </div>
+
+          <div class="form-group">
             <label for="field-defender_level">Level</label>
             <input
               id="field-defender_level"
@@ -276,7 +298,7 @@ interface Char {
 export default class extends Vue {
   attacker!: Char;
   defender!: Char;
-  advanced_stats: boolean = false;
+  advanced_stats: boolean = true;
 
   constructor() {
     super();
@@ -335,16 +357,16 @@ export default class extends Vue {
     let prob = 0;
     if (Math.abs(bmi_diff) > 0.5) {
       prob +=
-        Math.floor(bmi_diff) * 10 +
+        Math.trunc(bmi_diff) * 10 +
         Math.min(30, ch.level) -
         Math.min(30, victim.level);
     } else if (Math.abs(bmi_diff) < 0.2) {
       prob +=
-        Math.floor(bmi_diff) * 50 +
+        Math.trunc(bmi_diff) * 50 +
         1.5 * (Math.min(30, ch.level) - Math.min(30, victim.level));
     } else {
       prob +=
-        Math.floor(bmi_diff) * 100 +
+        Math.trunc(bmi_diff) * 100 +
         Math.min(30, ch.level) -
         Math.min(30, victim.level);
     }

@@ -113,15 +113,15 @@ export default class extends Vue {
     prob += (Math.max(0, 50 + 2 * level_diff) * this.attacker_backstab) / 99;
 
     if (this.attacker_weapon_skill < 80) {
-      prob = Math.floor((prob * this.attacker_weapon_skill) / 99);
+      prob = Math.trunc((prob * this.attacker_weapon_skill) / 99);
     }
 
     // Subtract notice
     prob -= this.victim_notice / 5;
 
+    // Proximate sneak contribution
     prob += (this.attacker_sneak - 50) / 10;
 
-    // Proximate sneak contribution
     //prob += Math.max(0, this.attacker_sneak - (Math.random() * 100) / 10);
 
     return prob;
