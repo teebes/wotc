@@ -158,10 +158,10 @@
               </div>
 
               <div class="form-group">
-                <label for="field-attacker_carry_weight">Carry Weight</label>
+                <label for="field-attacker_worn_weight">Worn Weight</label>
                 <input
-                  id="field-attacker_carry_weight"
-                  v-model.number="attacker.carry_weight"
+                  id="field-attacker_worn_weight"
+                  v-model.number="attacker.worn_weight"
                   inputmode="numeric"
                   pattern="[0-9.]*"
                 >
@@ -237,10 +237,10 @@
           </div>
 
           <div class="form-group">
-            <label for="field-defender_carry_weight">Carry Weight</label>
+            <label for="field-defender_worn_weight">Worn Weight</label>
             <input
-              id="field-defender_carry_weight"
-              v-model.number="defender.carry_weight"
+              id="field-defender_worn_weight"
+              v-model.number="defender.worn_weight"
               inputmode="numeric"
               pattern="[0-9.]*"
             >
@@ -279,7 +279,7 @@ interface Char {
   level: number;
 
   naked_weight: number;
-  carry_weight: number;
+  worn_weight: number;
 
   char_feet: number;
   char_inches: number;
@@ -298,7 +298,7 @@ interface Char {
 export default class extends Vue {
   attacker!: Char;
   defender!: Char;
-  advanced_stats: boolean = true;
+  advanced_stats: boolean = false;
 
   constructor() {
     super();
@@ -306,7 +306,7 @@ export default class extends Vue {
       char_feet: 5,
       char_inches: 8,
       naked_weight: 154,
-      carry_weight: 20,
+      worn_weight: 20,
 
       level: 30,
       wield_weight: 165,
@@ -325,14 +325,14 @@ export default class extends Vue {
 
   get attacker_bmi() {
     return (
-      (10 * (this.attacker.naked_weight + this.attacker.carry_weight)) /
+      (10 * (this.attacker.naked_weight + this.attacker.worn_weight)) /
       (this.attacker.char_feet * 12 + this.attacker.char_inches) ** 2
     );
   }
 
   get defender_bmi() {
     return (
-      (10 * (this.defender.naked_weight + this.defender.carry_weight)) /
+      (10 * (this.defender.naked_weight + this.defender.worn_weight)) /
       (this.defender.char_feet * 12 + this.defender.char_inches) ** 2
     );
   }
