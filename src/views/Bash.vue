@@ -328,7 +328,7 @@ export default class extends Vue {
   get bash_chance() {
     let prob = 30 + this.bmi_portion + this.stats_portion;
     prob += this.ride_bonus;
-    prob = prob + Math.trunc(this.attacker.bash_skill / 99);
+    prob = Math.trunc(prob * this.attacker.bash_skill / 99);
     prob = Math.max(0, prob);
 
     prob += this.clubs_bonus;
