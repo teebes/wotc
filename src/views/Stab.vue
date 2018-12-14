@@ -40,7 +40,7 @@
             <div class="form-group">
               <label for="field-attacker_sneak">Sneak</label>
               <input
-                id="field-attacker_level"
+                id="field-attacker_sneak"
                 v-model.number="attacker_sneak"
                 inputmode="numeric"
                 pattern="[0-9]*"
@@ -56,6 +56,19 @@
                 pattern="[0-9]*"
               >
             </div>
+          </div>
+
+          <div class="pair">
+            <div class="form-group">
+              <label for="field-attacker_hide">Hide</label>
+              <input
+                id="field-attacker_hide"
+                v-model.number="attacker_hide"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
+            </div>
+            <div class="form-group"></div>
           </div>
         </form>
       </div>
@@ -99,6 +112,7 @@ export default class extends Vue {
   attacker_is_berserk: boolean = false;
   attacker_sneak: number = 99;
   attacker_is_kho: boolean = false;
+  attacker_hide: number = 99;
 
   victim_level: number = 30;
   victim_notice: number = 87;
@@ -119,8 +133,10 @@ export default class extends Vue {
     // Subtract notice
     prob -= this.victim_notice / 5;
 
+    prob = (prob * this.attacker_hide) / 99;
+
     // Proximate sneak contribution
-    prob += (this.attacker_sneak - 50) / 10;
+    prob += Math.max(0, (this.attacker_sneak - 50) / 10);
 
     //prob += Math.max(0, this.attacker_sneak - (Math.random() * 100) / 10);
 
