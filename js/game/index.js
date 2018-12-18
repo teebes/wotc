@@ -93,7 +93,7 @@ define(function(require) {
 
             if (radius == 2) size = 128;
             if (radius == 3) size = 176;
-            if (radius == 4) size = 224;            
+            if (radius == 4) size = 224;
             if (radius == 5) size = 270;
             if (radius == 6) size = 320;
             if (radius == 7) size = 368;
@@ -194,6 +194,8 @@ define(function(require) {
 
             } else if (message.type === 'tic') {
                 Channel.trigger('tic')
+            } else if (message.type === 'coms') {
+                // do nothing for now
             } else {
                 _.each(message.data, function(line) {
 

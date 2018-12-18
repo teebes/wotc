@@ -71,17 +71,19 @@ define(function(require) {
                 var re = /(\w)\s-\s(\w+)/;
                 var dirs = {};
                 if (noteField) {
-                    var notes = noteField.split('|');
+                    var notes = noteField.split('|'),
+                        availableDirs = []; // number of avilable dirs
 
                     _.each(notes, function(note) {
                         note = note.trim()
                         var match = re.exec(note);
                         if (match) {
                             dirs[match[1]] = match[2]
+                            availableDirs.push(match[1]);
                         }
                     })
 
-                    var cmdRe = /([okluc])d([neswud])/;
+                    var cmdRe = /([okluc])d([neswud])?/;
                     var cmdMatch = cmdRe.exec(cmd)
                     if (dirs && cmdMatch) {
                         var code = cmdMatch[1], doorAction;
@@ -91,8 +93,13 @@ define(function(require) {
                         if (code == 'u') doorAction = 'unlock';
                         if (code == 'c') doorAction = 'close';
 
-                        var doorDir = cmdMatch[2]
-                        var doorName = dirs[doorDir]
+                        var doorDir = cmdMatch[2];
+
+                        if (!doorDir && availableDirs.length == 1) {
+                            doorDir = availableDirs[0]
+                        }
+
+                        var doorName = dirs[doorDir];
 
                         if (doorName) {
                             cmd = doorAction + ' ' + doorName + ' ' + doorDir
