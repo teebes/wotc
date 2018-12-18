@@ -43,6 +43,21 @@ define(function(require) {
         },
     });
 
+    var ComMessage = Marionette.View.extend({
+        template: _.template("<%= data %>"),
+        className: function() {
+            var className = 'com-msg';
+            if (this.model.attributes.color) {
+                className += ' ' + this.model.attributes.color;
+            }
+            return className;
+        }
+    });
+
+    var ComsView = Marionette.CollectionView.extend({
+        className: 'coms-collection',
+        childView: ComMessage,
+    })
 
     return Marionette.View.extend({
         /*
@@ -56,6 +71,7 @@ define(function(require) {
             consoleRegion: '.console-region',
             inputRegion: '.input-region',
             scrollToolRegion: '.scroll-tool-region',
+            comsRegion: '.coms-region',
         },
         events: {
             'click .corner-map-region': 'onClickMap',
@@ -66,6 +82,8 @@ define(function(require) {
                 type: 'incoming',
                 data: 'Connected.'
             }));
+
+            this.comsMessages = new Backbone.Collection();
 
             this.game_map = this.options.game_map;
             this.current_room_key = null;
@@ -84,6 +102,17 @@ define(function(require) {
             }));
 
             this.showChildView('inputRegion', new InputView());
+            this.showComs();
+        },
+
+        showComs: function() {
+            if (data.config.coms === 'true') {
+                this.showChildView('comsRegion', new ComsView({
+                        collection: this.comsMessages,
+                    }));
+            } else {
+                this.getRegion('comsRegion').empty();
+            }
         },
 
         showBigMap: function() {
@@ -114,7 +143,10 @@ define(function(require) {
                 radius: radius,
                 clickable: false,
             })
+
             this.showChildView('mapRegion', this.mapView);
+            this.$el.find('.coms-region').css('width', size);
+            this.showComs();
             this.mapSize = 'big';
         },
 
@@ -128,6 +160,8 @@ define(function(require) {
                 clickable: false,
             })
             this.showChildView('mapRegion', this.mapView);
+            this.getRegion('mapRegions').empty();
+            this.$el.find('.coms-region').css('width', 78);
             this.mapSize = 'small';
         },
 
@@ -195,7 +229,15 @@ define(function(require) {
             } else if (message.type === 'tic') {
                 Channel.trigger('tic')
             } else if (message.type === 'coms') {
-                // do nothing for now
+                var delta = this.comsMessages.length - 5;
+                if (delta > 0) {
+                    this.comsMessages.remove(this.collection.slice(0, delta));
+                }
+                this.comsMessages.add(new Backbone.Model(message));
+
+            } else if (message.type === 'config') {
+                data.config = message.config;
+                this.showComs();
             } else {
                 _.each(message.data, function(line) {
 

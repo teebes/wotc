@@ -338,7 +338,7 @@ define(function(require) {
                 this.logging_in = false;
             } else if (message.type === 'config') {
                 data.config = message.config
-                
+
                 if (data.config.tictimer && data.config.tictimer !== 'true') {
                     this.onTic()
                 }

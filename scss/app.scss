@@ -469,20 +469,48 @@ button.btn-default, a[role=button].btn-default {
 
             display: flex;
 
-            .corner-map-region {
-
+            .map-wrapper {
                 position: absolute;
                 top: 0px;
                 right: 0;
-                z-index: 100;
+                z-index: 200;
+                height: 100%;
 
-                canvas {
-                    background: rgba(26, 26, 28, 0.8);
-                    border: 1px solid #242629;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 0;
+
+                .corner-map-region {
+
+                    canvas {
+                        background: rgba(26, 26, 28, 0.8);
+                        border: 1px solid #242629;
+                    }
+
+                    &:hover {
+                        cursor: pointer;
+                    }
                 }
 
-                &:hover {
-                    cursor: pointer;
+                .coms-region {
+
+                    flex-grow: 0;
+                    overflow-y: auto;
+
+                    .coms-collection {
+                        background: $color-background;
+                        border: 1px solid #242629;
+                        padding: 5px;
+                        display: flex;
+                        flex-direction: column-reverse;
+
+                        .com-msg {
+                            margin-bottom: 5px;
+                            &.yellow { color: $color-secondary; }
+                            &.red { color: $color-red; }
+                            &.blue { color: #99ccff; }
+                        }
+                    }
                 }
             }
 
