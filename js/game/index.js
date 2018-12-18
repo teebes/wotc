@@ -160,7 +160,7 @@ define(function(require) {
                 clickable: false,
             })
             this.showChildView('mapRegion', this.mapView);
-            this.getRegion('mapRegions').empty();
+            this.getRegion('comsRegion').empty();
             this.$el.find('.coms-region').css('width', 78);
             this.mapSize = 'small';
         },
