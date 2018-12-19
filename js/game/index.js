@@ -106,12 +106,19 @@ define(function(require) {
         },
 
         showComs: function() {
+
             if (data.config.coms === 'true') {
+                // Set coms height
+                var comHeight = this.$el.find('.console-region').height()
+                            -
+                            this.$el.find('.corner-map-region').height();
+                this.$el.find('.coms-region').css('height', comHeight);
                 this.showChildView('comsRegion', new ComsView({
                         collection: this.comsMessages,
                     }));
             } else {
                 this.getRegion('comsRegion').empty();
+                this.$el.find('.coms-region').css('height', 0);
             }
         },
 
@@ -161,7 +168,8 @@ define(function(require) {
             })
             this.showChildView('mapRegion', this.mapView);
             this.getRegion('comsRegion').empty();
-            this.$el.find('.coms-region').css('width', 78);
+            this.$el.find('.coms-region').css('height', 0);
+            this.$el.find('.coms-region').css('width', 0);
             this.mapSize = 'small';
         },
 
