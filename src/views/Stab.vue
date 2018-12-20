@@ -4,7 +4,7 @@
       <div class="inner">
         <h1>
           Stab Chance:
-          <span class="color-primary">{{ stab_prob.toPrecision(3) }}</span>
+          <span class="color-primary">{{ stab_prob }}</span>
         </h1>
       </div>
     </div>
@@ -140,7 +140,7 @@ export default class extends Vue {
 
     //prob += Math.max(0, this.attacker_sneak - (Math.random() * 100) / 10);
 
-    return prob;
+    return Math.trunc(prob);
   }
 }
 </script>

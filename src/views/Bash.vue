@@ -4,7 +4,7 @@
       <div class="inner">
         <h1>
           Bash Chance:
-          <span class="color-primary">{{ bash_chance.toPrecision(3) }}</span>
+          <span class="color-primary">{{ bash_chance }}</span>
         </h1>
 
         <table class="results-table">
@@ -328,13 +328,13 @@ export default class extends Vue {
   get bash_chance() {
     let prob = 30 + this.bmi_portion + this.stats_portion;
     prob += this.ride_bonus;
-    prob = Math.trunc(prob * this.attacker.bash_skill / 99);
+    prob = Math.trunc((prob * this.attacker.bash_skill) / 99);
     prob = Math.max(0, prob);
 
     prob += this.clubs_bonus;
 
     prob = Math.min(95, prob);
-    return prob;
+    return Math.ceil(prob);
   }
 
   get bmi_portion() {
@@ -393,5 +393,4 @@ export default class extends Vue {
 </script>
 
 <style lang='scss'>
-@import "@/styles/base.scss";
 </style>

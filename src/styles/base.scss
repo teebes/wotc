@@ -111,6 +111,23 @@ body {
     outline: 0;
   }
 
+  input,
+  select {
+    &:not[type="checkbox"] {
+      height: 40px;
+    }
+  }
+
+  select {
+    -webkit-appearance: none;
+    -webkit-border-radius: 2px;
+    background: url("assets/select-arrow-with-border.png") no-repeat right #111;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
   &.inline {
     label,
     input {

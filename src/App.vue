@@ -5,21 +5,23 @@
     <div class="nav">
       <router-link to="/bash">BASH</router-link>
       <router-link to="/stab">STAB</router-link>
+      <router-link to="/charge">CHARGE</router-link>
+      <router-link to="/kick">KICK</router-link>
     </div>
 
     <router-view/>
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "styles/base.scss";
 
 .nav {
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  padding: 20px 0;
   a {
-    //@include font-title;
+    padding: 0 5px;
     color: $color-text-hex-50;
     text-decoration: none;
     &:hover {
