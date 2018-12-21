@@ -297,7 +297,7 @@ export default class extends Vue {
       worn_weight: 20,
 
       level: 30,
-      wield_weight: 165,
+      wield_weight: 16.5,
       wield_ob: 180,
       wield_pb: 0,
       is_riding: true,
@@ -366,9 +366,9 @@ export default class extends Vue {
       victim = this.defender;
     let prob = 0;
 
-    if (ch.wield_weight >= 100) {
+    if (ch.wield_weight >= 10) {
       const attacker_portion =
-        ((ch.wield_weight / 50) * ch.wield_ob) / 3 + ch.wield_pb / 4;
+        ((ch.wield_weight / 5) * ch.wield_ob) / 3 + ch.wield_pb / 4;
       const defender_portion = (victim.db * 3) / 2;
       prob = Math.min(30, attacker_portion - defender_portion);
     } else {
