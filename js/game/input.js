@@ -83,7 +83,7 @@ define(function(require) {
                         }
                     })
 
-                    var cmdRe = /([okluc])d([neswud])?/;
+                    var cmdRe = /^([okluc])d([neswud])?/;
                     var cmdMatch = cmdRe.exec(cmd)
                     if (dirs && cmdMatch) {
                         var code = cmdMatch[1], doorAction;
