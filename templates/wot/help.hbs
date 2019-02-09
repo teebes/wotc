@@ -21,11 +21,13 @@
 
     <li>To repeat the last command, hit the Enter key without anything in the input bar.</li>
 
-    <li>To enter a blank line (for example when looking at the who list or chests), enter '\'</li>
+    <li>To enter a blank line (for example when looking at the who list), enter '\' or ' '.</li>
 
     <li>You can define aliases with the <strong class='cmd'>#alias</strong> command, allowing you chain multi-line operations with semicolons, for example: <span class='cmd'>#alias bb hide ; backstab dark</span></li>
 
     <li>You can define variables with the <strong class='cmd'>#var</strong> command, for example: <span class='cmd'>#var opp human</span>. Combined with <span class='cmd'>#alias x kill h.@opp</span>, 'x' would now output 'kill h.human'.</li>
+
+    <li>In an aliased command, the @word1 variable will refer to the first passed argument. For example: <span class='cmd'>#alias ta #var target @word1</span> will make the command 'ta human' set the 'target' variable to 'human'.</li>
 
     <li>Use the up and down arrow keys on your keyboard to cycle through your command history.</li>
 

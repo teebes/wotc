@@ -390,15 +390,17 @@ button.btn-default, a[role=button].btn-default {
                     text-decoration: none;
                 }
 
-                .help-icon {
-                    width: 16px;
-                    height: 15px;
+                img.help-icon {
+                    // width: 16px;
+                    // height: 15px;
+                    position: relative;
+                    top: -7px;
+                    width: 24px;
+                    height: 23px;
+                    margin-left: 5px;
                     &:hover { cursor: pointer; }
                 }
 
-                img.help-icon {
-                    margin-left: 5px;
-                }
             }
         }
 
