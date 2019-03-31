@@ -4,5 +4,6 @@ define(function(require) {
         launched: false,
         currentRoom: null,
         ticTimer: false,
+        map: null,
     };
 });

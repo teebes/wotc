@@ -129,8 +129,6 @@ define(function(require) {
         }
     });
 
-
-
     var UINotificationView = Marionette.View.extend({
         className: function() {
             var classNames = 'ui-notification';
@@ -224,12 +222,26 @@ define(function(require) {
         },
 
         onRender: function() {
+            // Kick off initial map fetching
+            var GetMap = Backbone.Model.extend({
+                url: function() {
+                    return Config.realmsAPI + '/api/v1/builder/worlds/83/map/?nodesc=true';
+                }
+            })
+            new GetMap().fetch({
+                success: function(model, response) {
+                    data.map = model.attributes.rooms;
+                    console.log('Map loaded from api.')
+                }
+            });
+
             this.showChildView('mainRegion', new LoginView());
 
             // Debugging tool to speed up testing.
             if (EMULATE) {
                 Channel.trigger('login', EMULATE);
             }
+
         },
         onHelp: function(message) {
             var modalView = new ModalView({
@@ -242,14 +254,23 @@ define(function(require) {
 
             data.config = message.data.config;
 
-            var game_map = new Backbone.Collection();
             // Due to some odd bug, defining a model that uses key
             // as idAttribute didn't seem to work here, so instead
             // adding the key as the id manually.
-            for (var key in message.data.map) {
-                var roomData = message.data.map[key];
-                roomData.id = roomData.key;
-                game_map.add(new Backbone.Model(roomData));
+            if (data.map) {
+                var game_map = new Backbone.Collection();
+                for (var key in data.map) {
+                    var roomData = data.map[key];
+                    roomData.id = roomData.key;
+                    game_map.add(new Backbone.Model(roomData));
+                }
+            } else {
+                var game_map = new Backbone.Collection();
+                for (var key in message.data.map) {
+                    var roomData = message.data.map[key];
+                    roomData.id = roomData.key;
+                    game_map.add(new Backbone.Model(roomData));
+                }
             }
 
             if (data.config.layout === 'wide') {
@@ -265,7 +286,7 @@ define(function(require) {
             this.logged_in = true;
             Channel.trigger('notify', 'Connected');
         },
-        onLogin: function(data) {
+        onLogin: function(loginData) {
             /*
                 Send a login request to the websocket.
             */
@@ -280,19 +301,22 @@ define(function(require) {
             var self = this;
 
             this.websocket = new WebSocket(Config.wotWsServer);
+            var include_map = data.map ? false: true;
+            console.log('Sending with include_map as ' + include_map);
             this.websocket.onopen = function(event) {
                 Channel.trigger('notify', 'Logging in...', 'info', false);
                 Channel.trigger('send', {
                     'type': 'login',
                     'data': {
-                        'charname': data.charname,
-                        'password': data.password,
+                        'charname': loginData.charname,
+                        'password': loginData.password,
+                        'include_map': include_map,
                     },
                 });
             };
             this.websocket.onmessage = function(event) {
-                var data = Backbone.$.parseJSON(event.data);
-                Channel.trigger('receive', data);
+                var event_data = Backbone.$.parseJSON(event.data);
+                Channel.trigger('receive', event_data);
             },
 
             this.websocket.onclose = function(event) {
