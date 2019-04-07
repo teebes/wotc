@@ -27,7 +27,8 @@ define(function(require) {
         mountain: '#7a5b3e',
         water: '#4798c4',
         desert: '#bf824d',
-        field: '#8e9422'
+        field: '#8e9422',
+        trail: '#5a8b73',
     };
 
     var ROOM_FLAGS = {
