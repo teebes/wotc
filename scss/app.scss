@@ -10,6 +10,8 @@
     margin: 0 auto;
 }
 
+$mobile-breakpoint: 650px;
+
 // ==== Common Components
 
 html, body {
@@ -357,6 +359,11 @@ button.btn-default, a[role=button].btn-default {
         background-color: $color-background-header;
 
         height: 80px;
+        @media (max-width: $mobile-breakpoint) {
+            height: 40px;
+        }
+
+
         width: 100%;
         flex-shrink: 0;
 
@@ -380,7 +387,7 @@ button.btn-default, a[role=button].btn-default {
                 @include font-title;
                 font-size: 18px;
                 color: $color-text-hex-50;
-                flex: 2 0;
+                flex: 3 0;
                 display: flex;
                 justify-content: center;
 
