@@ -355,6 +355,13 @@ button.btn-default, a[role=button].btn-default {
         }
     }
 
+    #player-count-region {
+        position: relative;
+        top: 15%;
+        margin: 0 auto;
+        color: $color-text-hex-70;
+    }
+
     .header-region {
         background-color: $color-background-header;
 

@@ -129,6 +129,12 @@ define(function(require) {
         }
     });
 
+    var PlayerCountView = Marionette.View.extend({
+        template: _.template(
+            "Players Online: {{ ls_count }} Light Side - {{ ds_count }} Dark Side"
+        )
+    });
+
     var UINotificationView = Marionette.View.extend({
         className: function() {
             var classNames = 'ui-notification';
@@ -197,6 +203,7 @@ define(function(require) {
             timerRegion: '#timer-region',
             mainRegion: '.main-region',
             ticTimerRegion: '.tic-timer-region',
+            playerCountRegion: "#player-count-region",
         },
 
         events: {
@@ -236,6 +243,7 @@ define(function(require) {
             });
 
             this.showChildView('mainRegion', new LoginView());
+            this.showPlayerCount();
 
             // Debugging tool to speed up testing.
             if (EMULATE) {
@@ -251,6 +259,7 @@ define(function(require) {
         },
         connect: function(message) {
             this.getRegion('timerRegion').empty();
+            this.clearPlayerCount();
 
             data.config = message.data.config;
 
@@ -327,6 +336,7 @@ define(function(require) {
                 if (self.logged_in) {
                     self.showChildView('mainRegion', new LoginView());
                     self.showChildView('timerRegion', new TimerView());
+                    self.showPlayerCount();
                     self.logged_in = false;
                 }
             }
@@ -352,6 +362,7 @@ define(function(require) {
             } else if (message.type === 'disconnected') {
                 this.showChildView('mainRegion', new LoginView());
                 this.showChildView('timerRegion', new TimerView());
+                this.showPlayerCount();
                 Channel.trigger('notify', 'Connection closed.');
                 this.logging_in = false;
                 self.logged_in = false;
@@ -398,6 +409,29 @@ define(function(require) {
             if (view) { view.destroy() }
             if (data.config.tictimer !== 'true') { return; }
             this.showChildView('ticTimerRegion', new TicTimerView());
+        },
+
+
+        // Player Count
+
+        showPlayerCount: function() {
+            console.log("showing player count");
+            var self = this;
+            var GetWhoCount = Backbone.Model.extend({
+                url: function() {
+                    return Config.realmsAPI + "/api/v1/wot/who/?format=json";
+                }
+            });
+            new GetWhoCount().fetch({
+                success: function(model, response) {
+                    self.showChildView(
+                        "playerCountRegion",
+                        new PlayerCountView({model: model}));
+                }
+            });
+        },
+        clearPlayerCount: function() {
+            this.getRegion("playerCountRegion").empty();
         }
 
         /* ==== Scrolling ==== */
