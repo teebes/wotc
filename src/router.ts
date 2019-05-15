@@ -4,6 +4,7 @@ import Bash from "@/views/Bash.vue";
 import Stab from "@/views/Stab.vue";
 import Charge from "@/views/Charge.vue";
 import Kick from "@/views/Kick.vue";
+import Who from "@/views/Who.vue";
 
 Vue.use(Router);
 
@@ -36,6 +37,11 @@ export default new Router({
       path: "/kick",
       name: "kick",
       component: Kick
+    },
+    {
+      path: "/who",
+      name: "who",
+      component: Who
     },
     {
       path: "/about",

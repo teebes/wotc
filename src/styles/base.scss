@@ -37,6 +37,11 @@ $color-header-background: #131217;
   @include font-title;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   background: $color-background;
   box-sizing: border-box;
