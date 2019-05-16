@@ -3,14 +3,22 @@
     <h1>Players Online</h1>
 
     <div class="count">{{ ls_count }} Light Side - {{ ds_count }} Dark Side</div>
+
+    <ChartDay/>
   </div>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
+import LineExample from "@/components/LineChart.js";
+import ChartDay from "@/components/ChartDay.vue";
 
-@Component
+@Component({
+  components: {
+    ChartDay
+  }
+})
 export default class extends Vue {
   ls_count: number = 0;
   ds_count: number = 0;
@@ -43,6 +51,9 @@ export default class extends Vue {
 #players-online {
   margin: 0 auto;
   margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .count {
     margin-top: 50px;
