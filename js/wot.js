@@ -243,7 +243,7 @@ define(function(require) {
             });
 
             this.showChildView('mainRegion', new LoginView());
-            this.showPlayerCount();
+            //this.showPlayerCount();
 
             // Debugging tool to speed up testing.
             if (EMULATE) {
@@ -336,7 +336,7 @@ define(function(require) {
                 if (self.logged_in) {
                     self.showChildView('mainRegion', new LoginView());
                     self.showChildView('timerRegion', new TimerView());
-                    self.showPlayerCount();
+                    //self.showPlayerCount();
                     self.logged_in = false;
                 }
             }
@@ -362,7 +362,7 @@ define(function(require) {
             } else if (message.type === 'disconnected') {
                 this.showChildView('mainRegion', new LoginView());
                 this.showChildView('timerRegion', new TimerView());
-                this.showPlayerCount();
+                //this.showPlayerCount();
                 Channel.trigger('notify', 'Connection closed.');
                 this.logging_in = false;
                 self.logged_in = false;
