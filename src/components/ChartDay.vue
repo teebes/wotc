@@ -34,7 +34,7 @@ export default class extends Vue {
     for (const record of this.snapshots) {
       const hour = getHour(record);
 
-      if (currentHour && currentHour === hour) {
+      if (currentHour !== null && currentHour === hour) {
         continue;
       }
 

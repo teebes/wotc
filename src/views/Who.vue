@@ -4,7 +4,7 @@
 
     <div class="count">{{ ls_count }} Light Side - {{ ds_count }} Dark Side</div>
 
-    <!-- <ChartDay :snapshots="snapshots"/> -->
+    <ChartDay :snapshots="snapshots"/>
   </div>
 </template>
 
