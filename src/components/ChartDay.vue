@@ -44,6 +44,10 @@ export default class extends Vue {
       ds_counts.push(record.ds_count);
     }
 
+    labels.reverse();
+    ls_counts.reverse();
+    ds_counts.reverse();
+
     const d = {
       labels: labels,
       datasets: [
@@ -65,7 +69,8 @@ export default class extends Vue {
 
   async mounted() {
     const resp = await axios.get(
-      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
+      //"https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
+      "http://localhost:8000/api/v1/wot/who/chart/?format=json"
     );
     this.graph_data = resp.data;
   }
