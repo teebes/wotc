@@ -2,11 +2,8 @@ import { Line } from "vue-chartjs";
 
 export default {
   extends: Line,
-  props: ["chart_data", "foo"],
+  props: ["chart_data"],
   mounted() {
-    console.log(this.foo);
-    console.log(this.chart_data);
-
     this.gradient = this.$refs.canvas
       .getContext("2d")
       .createLinearGradient(0, 0, 0, 450);
@@ -43,29 +40,9 @@ export default {
       }
     };
 
-    console.log(this.chart_data);
-
     this.renderChart(this.chart_data, {
       responsive: true,
       maintainAspectRatio: false
     });
-
-    /*
-    this.renderChart({
-      //labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      labels: [1, 2, 3, 4, 5, 6, 7],
-      datasets: [
-        {
-          label: 'Data One',
-          backgroundColor: '#FC2525',
-          data: [40, 39, 10, 40, 39, 80, 40]
-        },{
-          label: 'Data Two',
-          backgroundColor: '#05CBE1',
-          data: [60, 55, 32, 10, 2, 12, 53]
-        }
-      ]
-    }, {responsive: true, maintainAspectRatio: false})
-    */
   }
 };

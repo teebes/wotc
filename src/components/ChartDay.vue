@@ -1,6 +1,6 @@
 <template>
   <div class="graph" v-if="graph_data.length">
-    <line-example :chart_data="chart_data" foo="bar"></line-example>
+    <line-example :chart_data="chart_data"></line-example>
   </div>
 </template>
 
@@ -69,8 +69,7 @@ export default class extends Vue {
 
   async mounted() {
     const resp = await axios.get(
-      //"https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
-      "http://localhost:8000/api/v1/wot/who/chart/?format=json"
+      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
     );
     this.graph_data = resp.data;
   }

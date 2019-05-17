@@ -11,7 +11,6 @@
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
-import LineExample from "@/components/LineChart.js";
 import ChartDay from "@/components/ChartDay.vue";
 
 @Component({
