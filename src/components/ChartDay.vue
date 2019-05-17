@@ -1,6 +1,6 @@
 <template>
-  <div class="graph" v-if="graph_data.length">
-    <line-example :chart_data="chart_data"></line-example>
+  <div class="graph">
+    <line-example :chart_data="chart_data" v-if="snapshots.length"></line-example>
   </div>
 </template>
 
@@ -15,10 +15,10 @@ import LineExample from "@/components/LineChart.js";
   }
 })
 export default class extends Vue {
-  graph_data: any = [];
+  @Prop() snapshots!: [];
 
   get chart_data() {
-    if (!this.graph_data.length) return [];
+    if (!this.snapshots.length) return [];
 
     const chart = [];
     const labels = [];
@@ -31,7 +31,7 @@ export default class extends Vue {
 
     let currentHour = null;
 
-    for (const record of this.graph_data) {
+    for (const record of this.snapshots) {
       const hour = getHour(record);
 
       if (currentHour && currentHour === hour) {
@@ -63,15 +63,7 @@ export default class extends Vue {
         }
       ]
     };
-    console.log(d);
     return d;
-  }
-
-  async mounted() {
-    const resp = await axios.get(
-      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
-    );
-    this.graph_data = resp.data;
   }
 }
 </script>
