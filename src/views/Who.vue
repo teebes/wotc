@@ -1,11 +1,12 @@
 <template>
-  <div id="players-online">
+  <div id="players-online" v-if="snapshots.length">
     <h1>Players Online</h1>
 
     <div class="count">{{ ls_count }} Light Side - {{ ds_count }} Dark Side</div>
 
     <ChartDay :snapshots="snapshots"/>
   </div>
+  <div id="players-online" v-else>Loading...</div>
 </template>
 
 <script lang='ts'>
