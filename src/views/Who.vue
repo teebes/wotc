@@ -4,7 +4,7 @@
 
     <div class="count">{{ ls_count }} Light Side - {{ ds_count }} Dark Side</div>
 
-    <ChartDay :snapshots="snapshots"/>
+    <!-- <ChartDay :snapshots="snapshots"/> -->
   </div>
 </template>
 
@@ -41,9 +41,6 @@ export default class extends Vue {
     );
     this.snapshots = resp.data;
 
-    // const resp = await axios.get(
-    //   "https://writtenrealms.com:9000/api/v1/wot/who/?format=json"
-    // );
     if (resp.status == 200) {
       this.ls_count = this.snapshots[0].ls_count;
       this.ds_count = this.snapshots[0].ds_count;
