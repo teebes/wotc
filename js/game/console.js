@@ -145,7 +145,7 @@
 
         onScroll: function() {
             var distanceToBottom = this.getDistanceToBottom()
-            if (distanceToBottom === 0) {
+            if (distanceToBottom <= 5) {
                 Channel.trigger('scroll:reset');
             } else {
                 Channel.trigger('scroll:active');
@@ -160,7 +160,7 @@
         },
         scrollToBottom: function() {
             var element = this.$el[0];
-            element.scrollTop = element.scrollHeight;
+            element.scrollTop = element.scrollHeight + 50;
         },
 
         childView: function(message) {
@@ -177,7 +177,7 @@
         },
         onBeforeAddChild: function(childView) {
             var distanceToBottom = this.getDistanceToBottom();
-            this.wasScrolledDown = (distanceToBottom === 0) ? true : false;
+            this.wasScrolledDown = (distanceToBottom <= 5) ? true : false;
         },
         onAddChild: function(childView) {
             // See if there the collection needs to be culled
@@ -186,9 +186,9 @@
                 this.collection.remove(this.collection.slice(0, delta));
             }
 
-            var element = this.$el[0];
+            this.scrollToBottom();
             if (this.wasScrolledDown) {
-                element.scrollTop = element.scrollHeight;
+                this.scrollToBottom();
             }
 
         }
