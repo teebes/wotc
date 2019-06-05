@@ -177,10 +177,10 @@ define(function(require) {
         },
         onAttach: function() {
             var self = this;
-            this.secondsLeft = 62;
+            this.secondsLeft = 61;
             this.intervalId = setInterval(function() {
                 if (self.secondsLeft <= 1) {
-                    self.secondsLeft = 62
+                    self.secondsLeft = 61;
                 } else {
                     self.secondsLeft -= 1;
                 }
