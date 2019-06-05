@@ -186,7 +186,6 @@
                 this.collection.remove(this.collection.slice(0, delta));
             }
 
-            this.scrollToBottom();
             if (this.wasScrolledDown) {
                 this.scrollToBottom();
             }
