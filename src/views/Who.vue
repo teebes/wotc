@@ -1,53 +1,28 @@
 <template>
-  <div id="players-online" v-if="snapshots.length">
+  <div id="players-online">
     <h1>Players Online</h1>
 
-    <div class="count">{{ ls_count }} Light Side - {{ ds_count }} Dark Side</div>
+    <div class="chart-nav">
+      <router-link to="/who/daily">Daily</router-link>
+      <router-link to="/who/weekly">Weekly</router-link>
+      <router-link to="/who/monthly">Monthly</router-link>
+    </div>
 
-    <ChartDay :snapshots="snapshots"/>
+    <DailyView/>
   </div>
-  <div id="players-online" v-else>Loading...</div>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
-import ChartDay from "@/components/ChartDay.vue";
+import DailyView from "@/components/DailyView.vue";
 
 @Component({
   components: {
-    ChartDay
+    DailyView
   }
 })
-export default class extends Vue {
-  ls_count: number = 0;
-  ds_count: number = 0;
-  timeout: any = null;
-  snapshots: any = [];
-
-  async mounted() {
-    await this.updateCount();
-    this.timeout = setInterval(() => {
-      this.updateCount();
-    }, 10000);
-  }
-
-  destroyed() {
-    clearInterval(this.timeout);
-  }
-
-  async updateCount() {
-    const resp = await axios(
-      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
-    );
-    this.snapshots = resp.data;
-
-    if (resp.status == 200) {
-      this.ls_count = this.snapshots[0].ls_count;
-      this.ds_count = this.snapshots[0].ds_count;
-    }
-  }
-}
+export default class Who extends Vue {}
 </script>
 
 <style lang='scss' scoped>

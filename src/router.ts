@@ -42,6 +42,12 @@ export default new Router({
       path: "/who",
       name: "who",
       component: Who
+      // children: [
+      //   {
+      //     path: 'daily',
+      //     component: '',
+      //   }
+      // ],
     },
     {
       path: "/about",
