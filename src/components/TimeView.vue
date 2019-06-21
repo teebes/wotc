@@ -33,7 +33,7 @@ export default class extends Vue {
   @Prop() getLabel!: any;
 
   ts: any = null;
-  func: string = "avg";
+  func: string = "max";
   snapshots: any = [];
 
   @Watch("func")
