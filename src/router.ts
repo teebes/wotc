@@ -5,6 +5,9 @@ import Stab from "@/views/Stab.vue";
 import Charge from "@/views/Charge.vue";
 import Kick from "@/views/Kick.vue";
 import Who from "@/views/Who.vue";
+import DailyView from "@/components/DailyView.vue";
+import WeeklyView from "@/components/WeeklyView.vue";
+import MonthlyView from "@/components/MonthlyView.vue";
 
 Vue.use(Router);
 
@@ -41,7 +44,25 @@ export default new Router({
     {
       path: "/who",
       name: "who",
-      component: Who
+      component: Who,
+      redirect: "/who/daily",
+      children: [
+        {
+          path: "daily",
+          component: DailyView,
+          name: "who_daily"
+        },
+        {
+          path: "weekly",
+          component: WeeklyView,
+          name: "who_weekly"
+        },
+        {
+          path: "monthly",
+          component: MonthlyView,
+          name: "who_monthly"
+        }
+      ]
     },
     {
       path: "/about",

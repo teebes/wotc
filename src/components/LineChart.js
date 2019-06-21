@@ -42,7 +42,16 @@ export default {
 
     this.renderChart(this.chart_data, {
       responsive: true,
-      maintainAspectRatio: false
+      maintainAspectRatio: false,
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true
+            }
+          }
+        ]
+      }
     });
   }
 };

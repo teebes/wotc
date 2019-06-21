@@ -1,21 +1,31 @@
 <template>
-  <div class="graph">
-    <line-example :chart_data="chart_data" v-if="snapshots.length"></line-example>
+  <div id="players-online" v-if="snapshots.length">
+    <div class="graph">
+      <line-chart :chart_data="chart_data" v-if="snapshots.length"></line-chart>
+    </div>
   </div>
+  <div id="players-online" v-else>Loading...</div>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
-import LineExample from "@/components/LineChart.js";
+import LineChart from "@/components/LineChart.js"
 
 @Component({
   components: {
-    LineExample
+    LineChart
   }
 })
 export default class extends Vue {
-  @Prop() snapshots!: [];
+  snapshots: any = [];
+
+  async mounted() {
+    const resp = await axios(
+      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json&view=weekly"
+    );
+    this.snapshots = resp.data;
+  }
 
   get chart_data() {
     if (!this.snapshots.length) return [];
@@ -25,21 +35,26 @@ export default class extends Vue {
     const ls_counts = [],
       ds_counts = [];
 
-    const getHour = (elem: any) => {
-      return new Date(Date.parse(elem.created_ts)).getHours();
+    const getLabel = (elem: any) => {
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ];
+      const dayOfWeek = days[new Date(Date.parse(elem.created_ts)).getDay()];
+      return dayOfWeek.slice(0, 3);
     };
 
     let currentHour = null;
 
     for (const record of this.snapshots) {
-      const hour = getHour(record);
+      const ts_label = getLabel(record);
 
-      if (currentHour !== null && currentHour === hour) {
-        continue;
-      }
-
-      currentHour = hour;
-      labels.push(hour);
+      labels.push(ts_label);
       ls_counts.push(record.ls_count);
       ds_counts.push(record.ds_count);
     }
@@ -67,9 +82,3 @@ export default class extends Vue {
   }
 }
 </script>
-
-<style lang='scss' scoped>
-.graph {
-  margin-top: 50px;
-}
-</style>
