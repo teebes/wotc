@@ -1,16 +1,27 @@
 <template>
   <div id="players-online" v-if="snapshots.length">
+    <div class="avg-max">
+      <input type="radio" id="avg" value="avg" v-model="func">
+      <label for="avg">Avg</label>
+
+      <input type="radio" id="max" value="max" v-model="func">
+      <label for="max">Max</label>
+
+      <input type="radio" id="min" value="min" v-model="func">
+      <label for="min">Min</label>
+    </div>
+
     <div class="graph">
-      <line-chart :chart_data="chart_data" v-if="snapshots.length"></line-chart>
+      <line-chart :chart_data="chart_data" v-if="snapshots.length" :key="ts"></line-chart>
     </div>
   </div>
   <div id="players-online" v-else>Loading...</div>
 </template>
 
 <script lang='ts'>
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import axios from "axios";
-import LineChart from "@/components/LineChart.js"
+import LineChart from "@/components/LineChart.js";
 
 @Component({
   components: {
@@ -18,19 +29,35 @@ import LineChart from "@/components/LineChart.js"
   }
 })
 export default class extends Vue {
-
   @Prop() endpoint!: string;
   @Prop() getLabel!: any;
 
+  ts: any = null;
+  func: string = "avg";
   snapshots: any = [];
 
-  async mounted() {
-    const resp = await axios(this.endpoint);
+  @Watch("func")
+  async changeFunc(newfunc: any) {
+    this.fetch();
+    // const resp = await axios(this.endpoint + `&func=${newfunc}`);
+    // this.snapshots = resp.data;
+    // this.ts = new Date().getTime();
+  }
+  async fetch() {
+    this.snapshots = [];
+    const resp = await axios(this.endpoint + `&func=${this.func}`);
     this.snapshots = resp.data;
+    this.ts = new Date().getTime();
+  }
+
+  async mounted() {
+    this.fetch();
   }
 
   get chart_data() {
     if (!this.snapshots.length) return [];
+
+    console.log(";here");
 
     const chart = [];
     const labels = [];
@@ -82,3 +109,11 @@ export default class extends Vue {
   }
 }
 </script>
+
+<style lang='scss' scoped>
+label {
+  &:not(:last-child) {
+    margin-right: 20px;
+  }
+}
+</style>
