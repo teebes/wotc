@@ -1,74 +1,23 @@
 <template>
-  <div id="players-online" v-if="snapshots.length">
-    <div class="graph">
-      <line-chart :chart_data="chart_data" v-if="snapshots.length"></line-chart>
-    </div>
-  </div>
-  <div id="players-online" v-else>Loading...</div>
+    <TimeView :endpoint="endpoint" :getLabel="getLabel"/>
 </template>
 
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
-import axios from "axios";
-import LineChart from "@/components/LineChart.js"
+import TimeView from "@/components/TimeView.vue"
 
 @Component({
   components: {
-    LineChart
+    TimeView
   }
 })
-export default class extends Vue {
-  snapshots: any = [];
-
-  async mounted() {
-    const resp = await axios(
-      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json&view=monthly"
-    );
-    this.snapshots = resp.data;
+export default class MonthlyView extends Vue {
+  get endpoint() {
+      return "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json&view=yearly";
   }
 
-  get chart_data() {
-    if (!this.snapshots.length) return [];
-
-    const chart = [];
-    const labels = [];
-    const ls_counts = [],
-      ds_counts = [];
-
-    const getLabel = (elem: any) => {
-      return new Date(Date.parse(elem.created_ts)).getDate();
-    };
-
-    let currentHour = null;
-
-    for (const record of this.snapshots) {
-      const ts_label = getLabel(record);
-
-      labels.push(ts_label);
-      ls_counts.push(record.ls_count);
-      ds_counts.push(record.ds_count);
-    }
-
-    labels.reverse();
-    ls_counts.reverse();
-    ds_counts.reverse();
-
-    const d = {
-      labels: labels,
-      datasets: [
-        {
-          label: "DS Count",
-          backgroundColor: "#FC2525",
-          data: ds_counts
-        },
-        {
-          label: "LS Count",
-          backgroundColor: "#05CBE1",
-          data: ls_counts
-        }
-      ]
-    };
-    return d;
-  }
+  getLabel = (elem: any) => {
+    return new Date(Date.parse(elem.created_ts)).getDate();
+  };
 }
 </script>

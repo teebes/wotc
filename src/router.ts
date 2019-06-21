@@ -8,6 +8,7 @@ import Who from "@/views/Who.vue";
 import DailyView from "@/components/DailyView.vue";
 import WeeklyView from "@/components/WeeklyView.vue";
 import MonthlyView from "@/components/MonthlyView.vue";
+import YearlyView from "@/components/YearlyView.vue";
 
 Vue.use(Router);
 
@@ -61,6 +62,11 @@ export default new Router({
           path: "monthly",
           component: MonthlyView,
           name: "who_monthly"
+        },
+        {
+          path: "yearly",
+          component: YearlyView,
+          name: "who_yearly"
         }
       ]
     },
