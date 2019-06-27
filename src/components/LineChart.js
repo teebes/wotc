@@ -1,4 +1,5 @@
 import { Line } from "vue-chartjs";
+import store from "@/store.ts";
 
 export default {
   extends: Line,
@@ -11,13 +12,25 @@ export default {
       .getContext("2d")
       .createLinearGradient(0, 0, 0, 450);
 
+    // red
     this.gradient.addColorStop(0, "rgba(255, 0,0, 0.5)");
     this.gradient.addColorStop(0.5, "rgba(255, 0, 0, 0.25)");
     this.gradient.addColorStop(1, "rgba(255, 0, 0, 0)");
 
-    this.gradient2.addColorStop(0, "rgba(0, 231, 255, 0.9)");
-    this.gradient2.addColorStop(0.5, "rgba(0, 231, 255, 0.25)");
-    this.gradient2.addColorStop(1, "rgba(0, 231, 255, 0)");
+    // blue
+    // - orig
+    // this.gradient2.addColorStop(0, "rgba(0, 231, 255, 0.9)");
+    // this.gradient2.addColorStop(0.5, "rgba(0, 231, 255, 0.25)");
+    // this.gradient2.addColorStop(1, "rgba(0, 231, 255, 0)");
+
+    // this.gradient2.addColorStop(0, "rgba(32, 132, 196, 0.9)");
+    // this.gradient2.addColorStop(0.5, "rgba(32, 132, 196, 0.25)");
+    // this.gradient2.addColorStop(1, "rgba(32, 132, 196, 0)");
+
+    const blue = store.state.color_blue;
+    this.gradient2.addColorStop(0, `rgba(${blue}, 0.9)`);
+    this.gradient2.addColorStop(0.5, `rgba(${blue}, 0.25)`);
+    this.gradient2.addColorStop(1, `rgba(${blue}, 0)`);
 
     this.chart_data.datasets[0] = {
       ...this.chart_data.datasets[0],

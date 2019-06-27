@@ -5,7 +5,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    hide_frame: false
+    hide_frame: false,
+    color_blue: "0, 231, 255"
   },
   mutations: {
     hide_frame: state => {
@@ -14,6 +15,10 @@ export default new Vuex.Store({
 
     show_frame: state => {
       state.hide_frame = false;
+    },
+
+    blue_color_set: (state, rgba) => {
+      state.color_blue = rgba;
     }
   },
   actions: {}
