@@ -5,6 +5,7 @@ import Stab from "@/views/Stab.vue";
 import Charge from "@/views/Charge.vue";
 import Kick from "@/views/Kick.vue";
 import Who from "@/views/Who.vue";
+import WhoFrame from "@/views/WhoFrame.vue";
 import DailyView from "@/components/DailyView.vue";
 import WeeklyView from "@/components/WeeklyView.vue";
 import MonthlyView from "@/components/MonthlyView.vue";
@@ -69,6 +70,11 @@ export default new Router({
           name: "who_yearly"
         }
       ]
+    },
+    {
+      path: "/whoframe",
+      name: "whoframe",
+      component: WhoFrame
     },
     {
       path: "/about",

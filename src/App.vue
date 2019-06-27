@@ -1,14 +1,16 @@
 <template>
   <div id="app">
-    <header>WoTMUD Playground</header>
+    <template v-if="!$store.state.hide_frame">
+      <header>WoTMUD Playground</header>
 
-    <div class="nav">
-      <router-link to="/bash">BASH</router-link>
-      <router-link to="/stab">STAB</router-link>
-      <router-link to="/charge">CHARGE</router-link>
-      <router-link to="/kick">KICK</router-link>
-      <router-link to="/who">WHO</router-link>
-    </div>
+      <div class="nav">
+        <router-link to="/bash">BASH</router-link>
+        <router-link to="/stab">STAB</router-link>
+        <router-link to="/charge">CHARGE</router-link>
+        <router-link to="/kick">KICK</router-link>
+        <router-link to="/who">WHO</router-link>
+      </div>
+    </template>
 
     <router-view class="playground-page"/>
   </div>
