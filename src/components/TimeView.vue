@@ -1,14 +1,14 @@
 <template>
   <div id="players-online" v-if="snapshots.length">
     <div class="avg-max">
-      <input type="radio" id="avg" value="avg" v-model="func">
+      <input type="radio" id="min" value="min" v-model="func" />
+      <label for="min">Min</label>
+
+      <input type="radio" id="avg" value="avg" v-model="func" />
       <label for="avg">Avg</label>
 
-      <input type="radio" id="max" value="max" v-model="func">
+      <input type="radio" id="max" value="max" v-model="func" />
       <label for="max">Max</label>
-
-      <input type="radio" id="min" value="min" v-model="func">
-      <label for="min">Min</label>
     </div>
 
     <div class="graph">
