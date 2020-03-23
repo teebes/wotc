@@ -295,7 +295,9 @@ define(function(require) {
             message.echo = true;
             //message.data = message.data;
             var messageModel = new Backbone.Model(message);
-            this.collection.add(messageModel);
+            if (message.type != 'ping') {
+                this.collection.add(messageModel);
+            }
         },
 
         onActiveScroll: function() {

@@ -216,6 +216,7 @@ define(function(require) {
         initialize: function() {
             this.logging_in = false;
             this.logged_in = false;
+            this.pingInterval = null;
 
             this.listenTo(Channel, 'login', this.onLogin);
 
@@ -294,6 +295,17 @@ define(function(require) {
 
             this.logged_in = true;
             Channel.trigger('notify', 'Connected');
+
+            if (this.pingInterval) {
+                clearInterval(this.pingInterval);
+            }
+            this.pingInterval = setInterval(function() {
+                Channel.trigger('send', {
+                    type: 'ping',
+                    data: 'ping',
+                })
+            }, 10000)
+
         },
         onLogin: function(loginData) {
             /*
@@ -332,6 +344,9 @@ define(function(require) {
                 Channel.trigger(
                     'notify:error',
                     'No websocket connection available.');
+                if (self.pingInterval) {
+                    clearInterval(self.pingInterval);
+                }
                 self.logging_in = false;
                 if (self.logged_in) {
                     self.showChildView('mainRegion', new LoginView());
@@ -368,6 +383,9 @@ define(function(require) {
                 self.logged_in = false;
                 var view = this.getChildView('ticTimerRegion')
                 if (view) { view.destroy() }
+                if (this.pingInterval) {
+                    clearInterval(this.pingInterval);
+                }
             } else if (message.type === 'login-error') {
                 this.onNotifyError(message.data);
                 this.logging_in = false;
@@ -433,26 +451,6 @@ define(function(require) {
         clearPlayerCount: function() {
             this.getRegion("playerCountRegion").empty();
         }
-
-        /* ==== Scrolling ==== */
-
-        /*
-        onActiveScroll: function() {
-            if (!this.getRegion('scrollToolRegion').hasView()) {
-                this.showChildView('scrollToolRegion', new ScrollToolView({}));
-            } else {
-                console.log('has view');
-            }
-        },
-        onResetScroll: function() {
-            this.getRegion('scrollToolRegion').empty()
-        },
-        onClickNewMessages: function() {
-            Channel.trigger('scroll:bottom');
-            Channel.trigger('input:focus');
-            this.getRegion('scrollToolRegion').empty()
-        },
-        */
 
     });
 
