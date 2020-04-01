@@ -2,6 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 import Bash from "@/views/Bash.vue";
 import Stab from "@/views/Stab.vue";
+import Melee from "@/views/Melee.vue";
 import Charge from "@/views/Charge.vue";
 import Kick from "@/views/Kick.vue";
 import Who from "@/views/Who.vue";
@@ -32,6 +33,11 @@ export default new Router({
       path: "/stab",
       name: "stab",
       component: Stab
+    },
+    {
+      path: "/melee",
+      name: "melee",
+      component: Melee,
     },
     {
       path: "/charge",

@@ -6,6 +6,7 @@
       <div class="nav">
         <router-link to="/bash">BASH</router-link>
         <router-link to="/stab">STAB</router-link>
+        <router-link to="/melee">MELEE</router-link>
         <router-link to="/charge">CHARGE</router-link>
         <router-link to="/kick">KICK</router-link>
         <router-link to="/who">WHO</router-link>
