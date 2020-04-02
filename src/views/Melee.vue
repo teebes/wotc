@@ -85,7 +85,7 @@
       <div class="defender-info panel">
         <h2>DEFENDER</h2>
 
-        <div class="form-group">
+        <!-- <div class="form-group">
           <label for="field-victim_ob">OB</label>
           <input
             id="field-victim_ob"
@@ -93,7 +93,7 @@
             inputmode="numeric"
             pattern="[0-9]*"
           >
-        </div>
+        </div> -->
 
         <div class="form-group">
           <label for="field-victim_db">DB</label>
@@ -125,16 +125,15 @@ import { Pie } from "vue-chartjs";
 
 @Component
 export default class extends Vue {
-  attacker_1_ob: number = 160;
+  attacker_1_ob: number = 190;
   attacker_2_ob: number = 0;
   attacker_3_ob: number = 0;
   attacker_4_ob: number = 0;
   attacker_5_ob: number = 0;
   attacker_6_ob: number = 0;
 
-  victim_ob: number = 120;
-  victim_pb: number = 140;
-  victim_db: number = 120;
+  victim_db = 36;
+  victim_pb = 113;
 
   get hit_chance() {
     const total_ob =
@@ -144,30 +143,33 @@ export default class extends Vue {
       (this.attacker_4_ob || 0) +
       (this.attacker_5_ob || 0) +
       (this.attacker_6_ob || 0);
-    let pb = this.victim_pb;
+
+    const ob = this.attacker_1_ob;
     const db = this.victim_db;
-    const ob = this.victim_ob;
+    let pb = this.victim_pb;
 
     pb = pb / 4 + (pb * ob * 3) / 4 / total_ob;
 
     const d1size = 120;
     const d2size = 100;
 
-    let phits = 0;
-    let pmisses = 0;
+    let hits = 0;
+    let misses = 0;
     for (let d1 = 1; d1 <= d1size; d1++) {
       for (let d2 = 1; d2 <= d2size; d2++) {
-        const pdb = db + d2 * (db / (db + pb));
-        const ppb = pb + d2 * (db / (db + pb));
+        let combination = db + pb ? db + pb : 1;
 
-        const dbr = this.attacker_1_ob + d1 > pdb;
-        const pbr = this.attacker_1_ob + d1 - pdb > ppb;
+        let dbval = db + (d2 * db) / combination;
+        let pbval = pb + (d2 * pb) / combination;
 
-        if (dbr && pbr) phits += 1;
-        else pmisses += 1;
+        const dbr = this.attacker_1_ob + d1 > dbval;
+        const pbr = this.attacker_1_ob + d1 - pbval > pbval;
+
+        if (dbr && pbr) hits += 1;
+        else misses += 1;
       }
     }
-    return ((phits / (phits + pmisses)) * 100).toFixed(2);
+    return ((hits / (hits + misses)) * 100).toFixed(2);
   }
 }
 </script>
