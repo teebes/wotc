@@ -125,15 +125,15 @@ import { Pie } from "vue-chartjs";
 
 @Component
 export default class extends Vue {
-  attacker_1_ob: number = 190;
+  attacker_1_ob: number = 180;
   attacker_2_ob: number = 0;
   attacker_3_ob: number = 0;
   attacker_4_ob: number = 0;
   attacker_5_ob: number = 0;
   attacker_6_ob: number = 0;
 
-  victim_db = 36;
-  victim_pb = 113;
+  victim_db = 80;
+  victim_pb = 120;
 
   get hit_chance() {
     const total_ob =
