@@ -121,7 +121,7 @@
 
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { Pie } from "vue-chartjs";
+import { Pie, mixins } from "vue-chartjs";
 
 @Component
 export default class extends Vue {
@@ -148,7 +148,7 @@ export default class extends Vue {
     const db = this.victim_db;
     let pb = this.victim_pb;
 
-    pb = pb / 4 + (pb * ob * 3) / 4 / total_ob;
+    pb = pb / 4 + (pb * ob * 3 / 4) / total_ob;
 
     const d1size = 120;
     const d2size = 100;
@@ -159,11 +159,11 @@ export default class extends Vue {
       for (let d2 = 1; d2 <= d2size; d2++) {
         let combination = db + pb ? db + pb : 1;
 
-        let dbval = db + (d2 * db) / combination;
-        let pbval = pb + (d2 * pb) / combination;
+        let dbval = db + Math.trunc((d2 * db / combination));
+        let pbval = pb + Math.trunc((d2 * pb / combination));
 
-        const dbr = this.attacker_1_ob + d1 > dbval;
-        const pbr = this.attacker_1_ob + d1 - pbval > pbval;
+        const dbr = (this.attacker_1_ob + d1) > dbval;
+        const pbr = (this.attacker_1_ob + d1 - dbval) > pbval;
 
         if (dbr && pbr) hits += 1;
         else misses += 1;
