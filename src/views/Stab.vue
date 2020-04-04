@@ -87,9 +87,9 @@
         </div>
 
         <div class="form-group">
-          <label for="field-victim_notice">Level</label>
+          <label for="field-victim_level">Level</label>
           <input
-            id="field-victim_notice"
+            id="field-victim_level"
             v-model.number="victim_level"
             inputmode="numeric"
             pattern="[0-9]*"
