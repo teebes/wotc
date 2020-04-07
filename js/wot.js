@@ -365,7 +365,9 @@ define(function(require) {
             }
             console.log("Sending: ");
             console.log(message);
-            Channel.trigger('scroll:bottom');
+            if (message.type != 'ping') {
+                Channel.trigger('scroll:bottom');
+            }
             this.websocket.send(JSON.stringify(message));
         },
         onReceive: function(message) {
