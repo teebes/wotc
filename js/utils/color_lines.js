@@ -9,6 +9,7 @@ define(function(require) {
         '\x1b[32m': 'green',
         '\x1b[33m': 'yellow',
         '\x1b[0m': 'normal',
+        '\x1b[35m': 'purple',
     }
     var COLOR_LIST = [
         '\x1b[31m',
@@ -16,6 +17,7 @@ define(function(require) {
         '\x1b[32m',
         '\x1b[33m',
         '\x1b[0m',
+        '\x1b[35m',
     ]
     var END_COLOR = '\x1b[0m';
 

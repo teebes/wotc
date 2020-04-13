@@ -52,11 +52,7 @@
 
 <div class='room-mobs'>
     {{#each mob_lines}}
-        <div class='line'>
-            {{#each this}}
-            <span class='{{ this.color }}'>{{ this.text}}</span>
-            {{/each}}
-        </div>
+        <div class='line'>{{#each this}}<span class='{{ this.color }}'>{{ this.text}}</span>{{/each}}</div>
     {{/each}}
 </div>
 
