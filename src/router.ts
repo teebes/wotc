@@ -5,6 +5,7 @@ import Stab from "@/views/Stab.vue";
 import Melee from "@/views/Melee.vue";
 import Charge from "@/views/Charge.vue";
 import Kick from "@/views/Kick.vue";
+import Struggle from "@/views/Struggle.vue";
 import Who from "@/views/Who.vue";
 import WhoFrame from "@/views/WhoFrame.vue";
 import DailyView from "@/components/DailyView.vue";
@@ -22,17 +23,17 @@ export default new Router({
       path: "/",
       //alias: "/bash",
       name: "home",
-      redirect: "bash"
+      redirect: "bash",
     },
     {
       path: "/bash",
       name: "bash",
-      component: Bash
+      component: Bash,
     },
     {
       path: "/stab",
       name: "stab",
-      component: Stab
+      component: Stab,
     },
     {
       path: "/melee",
@@ -42,12 +43,17 @@ export default new Router({
     {
       path: "/charge",
       name: "charge",
-      component: Charge
+      component: Charge,
     },
     {
       path: "/kick",
       name: "kick",
-      component: Kick
+      component: Kick,
+    },
+    {
+      path: "/struggle",
+      name: "struggle",
+      component: Struggle,
     },
     {
       path: "/who",
@@ -58,29 +64,29 @@ export default new Router({
         {
           path: "daily",
           component: DailyView,
-          name: "who_daily"
+          name: "who_daily",
         },
         {
           path: "weekly",
           component: WeeklyView,
-          name: "who_weekly"
+          name: "who_weekly",
         },
         {
           path: "monthly",
           component: MonthlyView,
-          name: "who_monthly"
+          name: "who_monthly",
         },
         {
           path: "yearly",
           component: YearlyView,
-          name: "who_yearly"
-        }
-      ]
+          name: "who_yearly",
+        },
+      ],
     },
     {
       path: "/whoframe",
       name: "whoframe",
-      component: WhoFrame
+      component: WhoFrame,
     },
     {
       path: "/about",
@@ -89,7 +95,7 @@ export default new Router({
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () =>
-        import(/* webpackChunkName: "about" */ "./views/About.vue")
-    }
-  ]
+        import(/* webpackChunkName: "about" */ "./views/About.vue"),
+    },
+  ],
 });

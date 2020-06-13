@@ -3,13 +3,18 @@
     <template v-if="!$store.state.hide_frame">
       <header>WoTMUD Playground</header>
 
-      <div class="nav">
-        <router-link to="/bash">BASH</router-link>
-        <router-link to="/stab">STAB</router-link>
-        <router-link to="/melee">MELEE</router-link>
-        <router-link to="/charge">CHARGE</router-link>
-        <router-link to="/kick">KICK</router-link>
-        <router-link to="/who">WHO</router-link>
+      <div class='navs'>
+        <div class="nav">
+          <router-link to="/bash">BASH</router-link>
+          <router-link to="/stab">STAB</router-link>
+          <router-link to="/melee">MELEE</router-link>
+          <router-link to="/charge">CHARGE</router-link>
+          <router-link to="/kick">KICK</router-link>
+        </div>
+        <div class="nav">
+          <router-link to="/who">WHO</router-link>
+          <router-link to="/struggle">STRUGGLE</router-link>
+        </div>
       </div>
     </template>
 
@@ -50,6 +55,10 @@
         margin-left: 5px;
       }
     }
+  }
+
+  .navs > .nav:nth-child(2) {
+    padding-top: 0;
   }
 
   .playground-page {
