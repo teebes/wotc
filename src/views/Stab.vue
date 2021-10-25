@@ -124,11 +124,9 @@ export default class extends Vue {
     const level_diff =
       Math.min(30, this.attacker_level) - Math.min(30, this.victim_level);
 
-    prob += (Math.max(0, 50 + 2 * level_diff) * this.attacker_backstab) / 99;
+    prob += (Math.max(0, 55 + 2 * level_diff) * this.attacker_backstab) / 99;
 
-    if (this.attacker_weapon_skill < 80) {
-      prob = Math.trunc((prob * this.attacker_weapon_skill) / 99);
-    }
+    prob = Math.trunc((prob * this.attacker_weapon_skill) / 99);
 
     // Subtract notice
     prob -= this.victim_notice / 5;
