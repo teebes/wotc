@@ -48,6 +48,16 @@
           </div>
 
           <div class="form-group">
+              <label for="field-attacker_weapon_skill">Weapon</label>
+              <input
+                id="field-attacker_weapon_skill"
+                v-model.number="attacker_weapon_skill"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              >
+            </div>
+
+          <div class="form-group">
             <div class="is_riding form-group inline">
               <input id="field-is_flying" v-model="is_flying" type="checkbox">
               <label for="field-is_flying">Is flying</label>
@@ -80,6 +90,7 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 export default class extends Vue {
   attacker_level: number = 30;
   attacker_charge: number = 99;
+  attacker_weapon_skill: number = 99;
   victim_level: number = 30;
   terrain: string = "road";
   is_flying: boolean = false;
@@ -109,8 +120,11 @@ export default class extends Vue {
       Math.min(30, this.attacker_level) - Math.min(30, this.victim_level);
 
     let prob: number = Math.trunc(
-      (Math.max(0, 50 + 2 * level_diff) * this.attacker_charge) / 99
+      (Math.max(0, 55 + 2 * level_diff) * this.attacker_charge) / 99
     );
+
+    // Weapon skill modifier
+    prob = Math.trunc((prob * this.attacker_weapon_skill) / 99);
 
     if (this.is_flying) {
       prob /= 2;
