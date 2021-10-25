@@ -13,7 +13,7 @@
 <script lang='ts'>
 import { Component, Vue, Prop } from "vue-property-decorator";
 import axios from "axios";
-const LineChart = require('@/components/LineChart.js');
+import LineChart from "@/components/LineChart.js";
 
 @Component({
   components: {
