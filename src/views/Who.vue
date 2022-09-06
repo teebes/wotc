@@ -3,9 +3,9 @@
     <h1>Players Online</h1>
 
     <div class="chart-nav nav">
-      <router-link to="/who/daily">Daily</router-link>
+      <!-- <router-link to="/who/daily">Daily</router-link>
       <router-link to="/who/weekly">Weekly</router-link>
-      <router-link to="/who/monthly">Monthly</router-link>
+      <router-link to="/who/monthly">Monthly</router-link> -->
       <!-- <router-link to="/who/yearly">Yearly</router-link> -->
     </div>
 
