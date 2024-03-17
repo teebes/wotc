@@ -15,7 +15,7 @@ export default class extends Vue {
   snapshots: any = [];
 
   get endpoint() {
-    return "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json&view=weekly";
+    return "https://api.writtenrealms.com/api/v1/wot/who/chart/?format=json&view=weekly";
   }
 
   getLabel = (elem: any) => {

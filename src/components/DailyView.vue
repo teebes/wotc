@@ -39,7 +39,7 @@ export default class extends Vue {
 
   async updateCount() {
     const resp = await axios(
-      "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json"
+      "https://api.writtenrealms.com/api/v1/wot/who/chart/?format=json"
     );
     this.snapshots = resp.data;
 

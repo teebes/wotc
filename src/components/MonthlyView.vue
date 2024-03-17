@@ -13,7 +13,7 @@ import TimeView from "@/components/TimeView.vue"
 })
 export default class MonthlyView extends Vue {
   get endpoint() {
-      return "https://writtenrealms.com:9000/api/v1/wot/who/chart/?format=json&view=monthly";
+      return "https://api.writtenrealms.com/api/v1/wot/who/chart/?format=json&view=monthly";
   }
 
   getLabel = (elem: any) => {

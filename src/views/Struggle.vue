@@ -39,7 +39,7 @@ export default class Who extends Vue {
 
   async mounted() {
     const resp = await axios.get(
-      "https://writtenrealms.com:9000/api/v1/wot/struggle/?format=json"
+      "https://api.writtenrealms.com/api/v1/wot/struggle/?format=json"
     );
     console.log(resp.data);
     this.current_ls = resp.data.current.ls;
