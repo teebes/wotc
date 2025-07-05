@@ -2,8 +2,14 @@
 
 ## Docker
 
-docker build -t wot .
-docker -it --rm -p 3000:80
+### Build
+
+`docker build -t wotc .`
+
+### Run
+
+`docker run -it -p 8080:80 --rm wotc`
+
 Then visit http://localhost:3000/ in a browser
 
 ## Manual Installation
