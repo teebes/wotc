@@ -62,7 +62,8 @@ RUN mkdir -p stylesheets && \
     cp index.html index-serve.html && \
     sed -i 's/data-main="js\/wot"/data-main="js\/main-built"/' index-serve.html
 
-# Configure nginx with proper security headers
+# Configure nginx - create different configs for dev vs production
+# Development config (default)
 RUN echo 'server {\
     listen 80;\
     server_name localhost;\
@@ -71,6 +72,31 @@ RUN echo 'server {\
     add_header X-Frame-Options "SAMEORIGIN" always;\
     add_header X-Content-Type-Options "nosniff" always;\
     add_header X-XSS-Protection "1; mode=block" always;\
+    \
+    # API proxy to handle CORS for local development\
+    location /api/ {\
+        proxy_pass https://api.writtenrealms.com/api/;\
+        proxy_ssl_server_name on;\
+        proxy_set_header Host api.writtenrealms.com;\
+        proxy_set_header X-Real-IP $remote_addr;\
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
+        proxy_set_header X-Forwarded-Proto $scheme;\
+        \
+        # Add CORS headers\
+        add_header Access-Control-Allow-Origin "*" always;\
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;\
+        add_header Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization" always;\
+        \
+        # Handle preflight requests\
+        if ($request_method = OPTIONS) {\
+            add_header Access-Control-Allow-Origin "*";\
+            add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";\
+            add_header Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization";\
+            add_header Content-Length 0;\
+            add_header Content-Type text/plain;\
+            return 204;\
+        }\
+    }\
     \
     location / {\
         root /code/wot;\
@@ -85,6 +111,30 @@ RUN echo 'server {\
         add_header Cache-Control "public, immutable";\
     }\
 }' > /etc/nginx/conf.d/default.conf && \
+    \
+    # Production config (for when deployed at wot.writtenrealms.com)\
+    echo 'server {\
+        listen 80;\
+        server_name wot.writtenrealms.com;\
+        \
+        # Security headers\
+        add_header X-Frame-Options "SAMEORIGIN" always;\
+        add_header X-Content-Type-Options "nosniff" always;\
+        add_header X-XSS-Protection "1; mode=block" always;\
+        \
+        location / {\
+            root /code/wot;\
+            index index-serve.html;\
+            try_files $uri $uri/ =404;\
+        }\
+        \
+        # Cache static assets\
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {\
+            root /code/wot;\
+            expires 1y;\
+            add_header Cache-Control "public, immutable";\
+        }\
+    }' > /etc/nginx/conf.d/production.conf && \
     rm /etc/nginx/sites-enabled/default
 
 # Set proper permissions for application files
