@@ -14,6 +14,7 @@
         <div class="nav">
           <router-link to="/who">WHO</router-link>
           <router-link to="/struggle">STRUGGLE</router-link>
+          <router-link to="/trainer">TRAINER</router-link>
         </div>
       </div>
     </template>
